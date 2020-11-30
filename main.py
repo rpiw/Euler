@@ -3,6 +3,8 @@ import numpy as np
 
 class EulerRoutines:
 
+    _primes = np.array([], dtype=int)  # cache primes
+
     @staticmethod
     def pandigital_product(number1: int, number2: int) -> int:
         u"""Return product if multiplicand and multiplier and product can be written as a 1 through 9, else 0."""
@@ -19,6 +21,43 @@ class EulerRoutines:
                 return 0
         return product
 
+    @staticmethod
+    def is_prime(number: int):
+        if number < 2:
+            return False
+        if EulerRoutines._primes.size > 0 and number < EulerRoutines._primes[-1]:
+            return number in EulerRoutines._primes
+        for d in range(2, np.int(np.ceil(np.sqrt(number))) + 1):
+            if number % d == 0 and number != d:
+                return False
+        return True
+
+    @staticmethod
+    def primes(upper_limit: int, algorithm="brute", cache=True) -> np.array:
+        u"""Return array containing primes below upper_limit integer. Algorithm: brute - not implemented yet.
+        : cache (bool) - is true store primes in an array as a class member EulerRoutines._primes ."""
+
+        start = 3
+        if EulerRoutines._primes.size > 0:
+            if EulerRoutines._primes[-1] > upper_limit:
+                return np.array([x for x in EulerRoutines._primes if x < upper_limit])
+            else:
+                start = EulerRoutines._primes[-1]
+        results = np.array([2], dtype=int)
+
+        n = start
+        while n <= upper_limit:
+            if EulerRoutines.is_prime(n):
+                results = np.append(results, np.int(n))
+            n += 2
+
+        results = np.append(EulerRoutines._primes, results)
+
+        if cache:
+            EulerRoutines._primes = results
+
+        return results
+
 
 def problem_5():
     # brute force
@@ -29,6 +68,31 @@ def problem_5():
         else:
             number += 2
     return number
+
+
+def problem_27():
+    u"""Project Euler problem 27: Considering quadratics of the form:
+    n ** 2 + a * n + b , where |b| <= 1000 and |a| < 1000 .
+    Find the product of the coefficients, a and b, for the quadratic expression that produces the maximum number of
+    primes for consecutive values of n, starting with n = 0."""
+    # So, let we think... b must be a prime if result must be a prime for n = 0.
+    # Therefore, begin with searching all primes below 1000
+    possible_b = EulerRoutines.primes(1000)
+
+    def f(n, a, b): return n ** 2 + a * n + b
+    max_n = 0
+    A, B = 0, 0
+    for b in possible_b:
+        for a in np.arange(-10**3, 10**3, 1, dtype=int):
+            n = 0
+            while True:
+                if not EulerRoutines.is_prime(f(n, a, b)):
+                    break
+                n += 1
+            if n > max_n:
+                max_n = n
+                A, B = a, b
+    return A, B, max_n, A * B
 
 
 def problem_30():
@@ -79,4 +143,5 @@ if __name__ == '__main__':
     # print(number)
     # print(problem_30())
     # print(problem_31())
-    print(problem_32())
+    # print(problem_32())
+    print(problem_27())
