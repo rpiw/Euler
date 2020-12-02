@@ -110,17 +110,32 @@ def problem_30():
     return np.sum(results)
 
 
-# def problem_31():
-#     solutions = 0
-#     coins = np.array([1, 2, 5, 10, 20, 50, 100, 200], dtype=np.int16)
-#     factors = np.zeros(8, dtype=np.int16)
-#     solution = np.array([0, 0, 0, 0, 0, 0, 0, 1], dtype=int)
-#
-#     def func(factors):
-#         return np.sum(factors * coins) == 200
-#
-#     return solutions
-#
+def problem_31():
+    solutions = 0
+    coins = np.array([1, 2, 5, 10, 20, 50, 100, 200], dtype=np.int16)
+    factors = np.zeros(8, dtype=np.int16)
+    solution = np.array([0, 0, 0, 0, 0, 0, 0, 1], dtype=int)
+
+    solutions = []
+
+    def func(factors):
+        return np.sum(factors * coins) == 200
+
+    # Brute force approach, 8 loops: 4 800 000 000 possibilities, no way to go
+    # for one in range(0, 200):
+    #     for two in range(0, 100):
+    #         for five in range(0, 40):
+    #             for ten in range(0, 20):
+    #                 for twenty in range(0, 25):
+    #                     for fifty in range(0, 4):
+    #                         for one_hundred in (0, 1, 2):
+    #                             for two_hundreds in (0, 1):
+    #                                 if func(np.array([one, two, five, ten, twenty, fifty, one_hundred, two_hundreds])):
+    #                                     solutions.append(np.array([one, two, five, ten, twenty, fifty,
+    #                                                                one_hundred, two_hundreds]))
+
+    return solutions, len(solutions)
+
 
 def problem_32():
     results = np.array([], dtype=int)
@@ -137,6 +152,28 @@ def problem_32():
     return np.sum(results)
 
 
+def problem_42():
+    from string import ascii_uppercase
+    alphabet = {letter: index for (letter, index) in zip(ascii_uppercase, range(1, len(ascii_uppercase) + 1))}
+
+    with open("words.txt") as fi:
+        words = fi.readline()
+
+    new_words = words.split(',')
+    words = np.array([], dtype=np.str)
+    for w in new_words:
+        words = np.append(words, w.replace('"', ''))
+
+    def func(n): return int(0.5 * n * (n + 1))
+    values = set([func(x) for x in range(1, 2500)])
+    results = []
+    for word in words:
+        word_value = sum(alphabet[letter] for letter in word)
+        if word_value in values:
+            results.append(word)
+    return results
+
+
 if __name__ == '__main__':
     pass
     # number = problem_5()
@@ -144,4 +181,7 @@ if __name__ == '__main__':
     # print(problem_30())
     # print(problem_31())
     # print(problem_32())
-    print(problem_27())
+    # print(problem_27())
+    res = problem_42()
+    print(len(res), res)
+
