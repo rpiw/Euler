@@ -189,6 +189,20 @@ def problem_32():
     return np.sum(results)
 
 
+def problem_34():
+    max_n = int(10e6)  # Need to approximate an upper limit: 9! = 362880
+    results = np.array([], dtype=int)
+    from math import factorial
+
+    # pure brute force - factorials should be precalculated for speed, but I don't care
+    for number in range(3, max_n + 1):
+        digits = (int(s) for s in str(number))
+        suma = sum(map(factorial, digits))
+        if number == suma:
+            results = np.append(results, number)
+    return results
+
+
 def problem_41():
     max_n = 0
     for number in EulerRoutines.pandigital_numbers(9, 3):
@@ -229,4 +243,7 @@ if __name__ == '__main__':
     # print(problem_27())
     # res = problem_42()
     # print(len(res), res)
-    print(problem_41())
+    # print(problem_41())
+    res34 = problem_34()
+    print(res34)
+    print(sum(res34))
