@@ -190,7 +190,6 @@ def problem_32():
 
 
 def problem_41():
-    numbers = EulerRoutines.pandigital_numbers(9, 5)
     max_n = 0
     for number in EulerRoutines.pandigital_numbers(9, 3):
         if EulerRoutines.is_prime(number) and number > max_n:
