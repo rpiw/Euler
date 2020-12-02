@@ -58,6 +58,43 @@ class EulerRoutines:
 
         return results
 
+    @staticmethod
+    def is_pandigital(number):
+        u"""Return true if number is pandigital. Number should be integer or string"""
+        number = str(number)
+        usage = [0 for _ in range(len(number))]
+        for digit in number:
+            if int(digit) <= len(number):
+                usage[int(digit) - 1] += 1
+        if all(usage) == 1:
+            return True
+        return False
+
+    @staticmethod
+    def permute(number):
+        from itertools import permutations
+        return np.fromiter((int("".join(x)) for x in permutations(str(number))), int)
+
+    @staticmethod
+    def pandigital_numbers(n_start=1, n_stop=9):
+        u"""Return n-pandigital numbers.
+        If first argument is 1, function starts with numbers of length 1.
+        If second argument is 9, function ends on all permutation of 123456789.
+        Note: there is 9! = 362880 of such numbers.
+        """
+        starters = []
+        results = np.array([], int)
+        _range = range(n_start, n_stop + 1) if n_start <= n_stop else range(n_start, n_stop - 1, -1)
+        for l in _range:
+            digit = ""
+            for n in range(1, l + 1):
+                digit += str(n)
+            starters.append(digit)
+        for number in starters:
+            permutations = EulerRoutines.permute(number)
+            results = np.append(results, permutations)
+        return results
+
 
 def problem_5():
     # brute force
@@ -152,6 +189,15 @@ def problem_32():
     return np.sum(results)
 
 
+def problem_41():
+    numbers = EulerRoutines.pandigital_numbers(9, 5)
+    max_n = 0
+    for number in EulerRoutines.pandigital_numbers(9, 3):
+        if EulerRoutines.is_prime(number) and number > max_n:
+            max_n = number
+    return max_n
+
+
 def problem_42():
     from string import ascii_uppercase
     alphabet = {letter: index for (letter, index) in zip(ascii_uppercase, range(1, len(ascii_uppercase) + 1))}
@@ -182,6 +228,6 @@ if __name__ == '__main__':
     # print(problem_31())
     # print(problem_32())
     # print(problem_27())
-    res = problem_42()
-    print(len(res), res)
-
+    # res = problem_42()
+    # print(len(res), res)
+    print(problem_41())
