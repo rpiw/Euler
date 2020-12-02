@@ -95,6 +95,18 @@ class EulerRoutines:
             results = np.append(results, permutations)
         return results
 
+    @staticmethod
+    def divisors(number):
+        u"""Find all divisors of a given number."""
+        results = np.array([1], dtype=int)
+        for divisor in range(2, int(np.sqrt(number)) + 2):
+            if number % divisor == 0:
+                results = np.append(results, divisor)
+        for divisor in results:
+            if number % divisor == 0:
+                results = np.append(results, number // divisor)
+        return sorted(results)
+
 
 def problem_5():
     # brute force
@@ -105,6 +117,15 @@ def problem_5():
         else:
             number += 2
     return number
+
+
+def problem_12():
+    triangle_number = 1
+    i = 1
+    while len(EulerRoutines.divisors(triangle_number)) <= 500:
+        i += 1
+        triangle_number += i
+    return triangle_number
 
 
 def problem_27():
@@ -244,6 +265,7 @@ if __name__ == '__main__':
     # res = problem_42()
     # print(len(res), res)
     # print(problem_41())
-    res34 = problem_34()
-    print(res34)
-    print(sum(res34))
+    # res34 = problem_34()
+    # print(res34)
+    # print(sum(res34))
+    print(problem_12())

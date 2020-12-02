@@ -36,6 +36,10 @@ class TestEulerRoutines(unittest.TestCase):
         for bad_number in numbers_false:
             self.assertFalse(EulerRoutines.is_pandigital(bad_number), msg=str(bad_number))
 
+    def test_divisors(self):
+        div28 = np.array([1, 2, 4, 7, 14, 28], dtype=int)
+        self.assertTrue(np.array_equal(div28, EulerRoutines.divisors(28)))
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
