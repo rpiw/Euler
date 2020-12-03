@@ -1,5 +1,5 @@
 import unittest
-from main import EulerRoutines
+from main import EulerRoutines, Numeral
 import numpy as np
 
 
@@ -38,7 +38,38 @@ class TestEulerRoutines(unittest.TestCase):
 
     def test_divisors(self):
         div28 = np.array([1, 2, 4, 7, 14, 28], dtype=int)
+        div100 = np.array([1, 2, 4, 5, 10, 20, 25, 50, 100])
         self.assertTrue(np.array_equal(div28, EulerRoutines.divisors(28)))
+        self.assertTrue(np.array_equal(div100, EulerRoutines.divisors(100)))
+
+    def test_number_name(self):
+        # Examples from numerals.txt for sure must pass test, so, let we starts with them
+        names = Numeral.numerals()
+        # Add some more samples
+        names[342] = "three hundred and forty-two"
+        names[115] = "one hundred and fifteen"
+        for number in names.keys():
+            if number < 1000:
+                self.assertEqual(EulerRoutines.number_name(number), names[number])
+            else:
+                with self.assertRaises(ValueError):
+                    EulerRoutines.number_name(number)
+
+
+class TestNumeral(unittest.TestCase):
+
+    def test_numerals_init(self):
+        numbers = (1, 12, 34, 64, 109, 345)
+        for n in numbers:
+            numeral = Numeral(n)
+            self.assertEqual(int("".join(map(lambda x: str(x), numeral.factors))),
+                             n)
+
+    def test_numerals_name(self):
+        numbers = (1, 12, 34, 64, 109, 345)
+        for n in numbers:
+            numeral = Numeral(n)
+            self.assertEqual(str(n), numeral.name)
 
 
 if __name__ == '__main__':

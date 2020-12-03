@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Union
 
 
 class EulerRoutines:
@@ -99,13 +100,93 @@ class EulerRoutines:
     def divisors(number):
         u"""Find all divisors of a given number."""
         results = np.array([1], dtype=int)
-        for divisor in range(2, int(np.sqrt(number)) + 2):
+        for divisor in range(2, int(np.sqrt(number)) + 1):
             if number % divisor == 0:
                 results = np.append(results, divisor)
         for divisor in results:
-            if number % divisor == 0:
+            res = number % divisor
+            if res == 0 and number // divisor != divisor:
                 results = np.append(results, number // divisor)
         return sorted(results)
+
+    @staticmethod
+    def number_name(number):
+        u"""Return number name in British English."""
+        if number > 999:
+            print("Number is greater than excepted: less than 1000")
+            raise ValueError
+
+        return Numeral(number).name
+
+
+class Numeral:
+    _numerals = {}  # cache names of numbers
+
+    @classmethod
+    def numerals(cls, file="numerals.txt"):
+        u"""Create a dict with unique numerals from file or return dict if has already been created."""
+        if Numeral._numerals:
+            return Numeral._numerals
+        else:
+            import csv
+            with open(file, "r") as csvfile:
+                csv_reader = csv.reader(csvfile, delimiter="\t")
+                for row in csv_reader:
+                    Numeral._numerals[int(row[0].strip().replace(",", ""))] = row[1].strip()
+        return Numeral._numerals
+
+    def __init__(self, number: Union[int, float, str]):
+        self.number = number
+        self._string = str(self.number)
+        self.order = len(self._string) - 1
+        self.factors = []
+        n = self.number
+
+        for i in reversed(range(len(self._string))):
+            factor = n // 10 ** i
+            n = n - factor * 10 ** i
+            self.factors.append(factor)
+
+        self._name = self.create_name()
+
+    def __repr__(self):
+        return "Numeral: {number} ".format(number=self.number) + str(self.factors)
+
+    @property
+    def name(self):
+        return self._name
+
+    def create_name(self):
+        # Create part for tens <= 31
+        if self.number <= 31:
+            return Numeral.numerals()[self.number]
+
+        name_parts = []
+        # Create part for numbers in range(31, 100)
+        unit, tens = "", ""
+        part = int(str(self.factors[-2]) + str(self.factors[-1]))
+
+        if 0 < part <= 31:
+            tens = Numeral.numerals()[part]
+        else:
+            if self.factors[-1]:
+                unit = "-" + Numeral.numerals()[self.factors[-1]]
+            if self.factors[-2]:
+                tens = Numeral.numerals()[self.factors[-2] * 10]
+        name_parts.append(tens + unit)
+
+        # Create a part for hundred
+        if self.number >= 100:
+            hundred = ""
+            if self.factors[-3]:
+                hundred = Numeral.numerals()[self.factors[-3]] + " hundred"
+                if self.factors[-2] or self.factors[-1]:
+                    hundred += " and "
+            name_parts.append(hundred)
+
+        # TODO: Create a part for thousand
+
+        return "".join(reversed(name_parts))
 
 
 def problem_5():
@@ -126,6 +207,41 @@ def problem_12():
         i += 1
         triangle_number += i
     return triangle_number
+
+
+def problem_17():
+    v = 0
+    for i in range(1, 1000):
+        v += len(Numeral(i).name.replace(" ", "").replace("-", ""))
+    v += len("onethousand")
+    return v
+
+
+def problem_19():
+    from itertools import cycle
+    day = cycle(range(1, 8))
+    days_in_months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 30, 31, 31, 31]
+    year = 1901
+    sundays = 0
+    stop = False
+    while True:
+        if stop:
+            break
+        if year % 4:
+            days_in_months[1] = 29
+
+        months = range(12)
+        for m in months:
+            days = range(1, days_in_months[m] + 1)
+            for d in days:
+                if next(day) == 7 and d == 1:
+                    sundays += 1
+
+                if year == 2000 and m == 11 and d == 31:
+                    stop = True
+        year += 1
+
+    return sundays
 
 
 def problem_27():
@@ -268,4 +384,5 @@ if __name__ == '__main__':
     # res34 = problem_34()
     # print(res34)
     # print(sum(res34))
-    print(problem_12())
+    # print(problem_12())
+    print(problem_19())
