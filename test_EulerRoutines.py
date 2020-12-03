@@ -11,11 +11,22 @@ class TestEulerRoutines(unittest.TestCase):
                        193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257,
                        263, 269, 271], dtype=int)
 
+    def test_primes_debug(self):
+        u"""Smaller sample set - for debugging purpose"""
+        primes = TestEulerRoutines.primes
+        my_primes = EulerRoutines.primes(272, read=False)
+        for correct, excepted in zip(primes, my_primes):
+            self.assertEqual(correct, excepted)
+
     def test_primes(self):
-        my_primes = EulerRoutines.primes(272)
-        for p1, p2 in zip(TestEulerRoutines.primes, my_primes):
+        correct_primes = np.loadtxt("primes_correct.txt", dtype=int).flatten()
+
+        new_len = int(1/10 * len(correct_primes))
+        my_primes = EulerRoutines.primes(correct_primes[new_len])
+
+        self.assertEqual(len(correct_primes[:new_len]), len(my_primes))
+        for p1, p2 in zip(correct_primes, my_primes):
             self.assertEqual(p1, p2)
-        self.assertEqual(len(my_primes), len(EulerRoutines._primes))
 
     def test_is_prime(self):
         for p in TestEulerRoutines.primes:
@@ -54,6 +65,11 @@ class TestEulerRoutines(unittest.TestCase):
             else:
                 with self.assertRaises(ValueError):
                     EulerRoutines.number_name(number)
+
+    def test_rotate_digits(self):
+        expected = set((197, 971, 719))
+        actual = EulerRoutines.rotate_digits(197)
+        self.assertEqual(expected, actual)
 
 
 class TestNumeral(unittest.TestCase):

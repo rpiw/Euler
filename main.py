@@ -1,9 +1,12 @@
+from functools import reduce
+
 import numpy as np
 from typing import Union
 
 
 class EulerRoutines:
 
+    # @TODO: use functool.cache decorator
     _primes = np.array([], dtype=int)  # cache primes
 
     @staticmethod
@@ -33,12 +36,24 @@ class EulerRoutines:
                 return False
         return True
 
+    _primes_file_name = "primes.npy"
+
     @staticmethod
-    def primes(upper_limit: int, algorithm="brute", cache=True) -> np.array:
-        u"""Return array containing primes below upper_limit integer. Algorithm: brute - not implemented yet.
+    def primes(upper_limit: int, algorithm="sieve", cache=True, read=True) -> np.array:
+        u"""Return array containing primes below upper_limit integer. Algorithm: brute, sieve.
         : cache (bool) - is true store primes in an array as a class member EulerRoutines._primes ."""
 
         start = 3
+        if read:
+            read = np.array([])
+            try:
+                read = np.load(EulerRoutines._primes_file_name)
+            except FileNotFoundError:
+                pass
+
+            if read.size > 0:
+                EulerRoutines._primes = np.unique(np.concatenate((EulerRoutines._primes, read)), 0)
+
         if EulerRoutines._primes.size > 0:
             if EulerRoutines._primes[-1] > upper_limit:
                 return np.array([x for x in EulerRoutines._primes if x < upper_limit])
@@ -47,15 +62,33 @@ class EulerRoutines:
         results = np.array([2], dtype=int)
 
         n = start
-        while n <= upper_limit:
-            if EulerRoutines.is_prime(n):
-                results = np.append(results, np.int(n))
-            n += 2
 
-        results = np.append(EulerRoutines._primes, results)
+        if algorithm == "brute":
+            while n <= upper_limit:
+                if EulerRoutines.is_prime(n):
+                    results = np.append(results, np.int(n))
+                n += 2
+
+            results = np.append(EulerRoutines._primes, results)
+
+        elif algorithm == "sieve":
+            results = np.arange(3, upper_limit, 2, dtype=int)
+            sieve = {x: True for x in results}
+            print("Preparing for searching primes with Sieve of this ancient greek guy with funny name")
+            print("Space: [{start}, {end}]".format(start=3, end=upper_limit))
+            for number in results:
+                if sieve[number] and EulerRoutines.is_prime(number):
+                    k = number
+                    while k <= upper_limit:
+                        k += number
+                        sieve[k] = False
+
+            results = np.fromiter((x for x in sieve.keys() if sieve[x]), dtype=int)
+            results = np.append(np.array([2], dtype=int), results)
 
         if cache:
             EulerRoutines._primes = results
+            np.save(EulerRoutines._primes_file_name, results)
 
         return results
 
@@ -73,8 +106,21 @@ class EulerRoutines:
 
     @staticmethod
     def permute(number):
+        u"""Return all permutation of digits in number."""
         from itertools import permutations
         return np.fromiter((int("".join(x)) for x in permutations(str(number))), int)
+
+    @staticmethod
+    def rotate_digits(number):
+        u"""Rotate digits: for example input = 197, return: set(197, 971, 719)."""
+        number = str(number)
+        res = set()
+        for j in range(len(number)):
+            new_number = {}
+            for i in range(len(number)):
+                new_number[i] = number[len(number) - i % len(number) - 1 - j]
+            res.add(int("".join(reversed(new_number.values()))))
+        return res
 
     @staticmethod
     def pandigital_numbers(n_start=1, n_stop=9):
@@ -326,6 +372,25 @@ def problem_32():
     return np.sum(results)
 
 
+def problem_33():
+    from fractions import Fraction
+    results = []
+    for numerator in np.arange(10, 100, dtype=int):
+        for denominator in np.arange(numerator + 1, 100, dtype=int):
+            for i in range(2):
+                for j in range(2):
+                    if str(numerator)[i] == str(denominator)[j]:
+                        try:
+                            f1 = Fraction(int(str(numerator)[1 - i]), int(str(denominator)[1 - j]))
+                            f2 = Fraction(numerator, denominator)
+                            if f1 == f2 and numerator % 10 != 0 and denominator % 10 != 0:
+                                results.append((numerator, denominator))
+                        except ZeroDivisionError:
+                            continue
+    res = reduce(lambda x, y: x * y, (Fraction(x[0], x[1]) for x in results))
+    return res
+
+
 def problem_34():
     max_n = int(10e6)  # Need to approximate an upper limit: 9! = 362880
     results = np.array([], dtype=int)
@@ -338,6 +403,23 @@ def problem_34():
         if number == suma:
             results = np.append(results, number)
     return results
+
+
+def problem_35():
+    primes = EulerRoutines.primes(1000000)
+    primes_set = set(primes)
+    results = np.array([], dtype=int)
+    counter = 0
+    print(primes)
+    for prime in primes:
+        permutations = EulerRoutines.rotate_digits(prime)
+        for perm in permutations:
+            if perm not in primes_set:
+                break
+        else:
+            counter += 1
+            results = np.append(results, prime)
+    return counter, results
 
 
 def problem_41():
@@ -385,4 +467,6 @@ if __name__ == '__main__':
     # print(res34)
     # print(sum(res34))
     # print(problem_12())
-    print(problem_19())
+    # print(problem_19())
+    # print(problem_35())
+    print(problem_33())
