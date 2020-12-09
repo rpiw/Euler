@@ -7,6 +7,7 @@ from typing import Union
 
 class EulerRoutines:
     _primes = np.array([], dtype=int)  # cache primes
+    _primes_set = set()
 
     @staticmethod
     def pandigital_product(number1: int, number2: int) -> int:
@@ -30,7 +31,7 @@ class EulerRoutines:
         if number < 2:
             return False
         if EulerRoutines._primes.size > 0 and number < EulerRoutines._primes[-1]:
-            return number in EulerRoutines._primes
+            return number in EulerRoutines._primes_set
         for d in range(2, np.int(np.ceil(np.sqrt(number))) + 1):
             if number % d == 0 and number != d:
                 return False
@@ -88,6 +89,7 @@ class EulerRoutines:
 
         if cache:
             EulerRoutines._primes = results
+            EulerRoutines._primes_set = set(results)
             np.save(EulerRoutines._primes_file_name, results)
 
         return results
@@ -590,27 +592,28 @@ def problem_44():
     return best
 
 
-# ## DOES NOT WORK
-# def problem_49():
-#     primes = np.fromiter(filter(lambda x: len(str(x)) == 4, EulerRoutines.primes(10000)), dtype=int)
-#     results = []
-#     for prime in primes:
-#         permutations = EulerRoutines.permute(prime)
-#         local_results = []
-#         for p in set(permutations):
-#             if p in primes:
-#                 local_results.append(p)
-#         local_results.sort()
-#         if len(local_results) >= 3:
-#             increments = []
-#             for i in range(len(local_results) - 1):
-#                 if increments.count(local_results[i + 1] - local_results[i]) == 2:
-#                     results.append(local_results)
-#                     break
-#                 else:
-#                     increments.append(local_results[i + 1] - local_results[i])
-#
-#     return results
+def problem_49():
+    primes = np.fromiter(filter(lambda x: len(str(x)) == 4, EulerRoutines.primes(10000)), dtype=int)
+    results = set()
+    for prime in primes:
+        permutations = EulerRoutines.permute(prime)
+        local_results = []
+        for p in set(permutations):
+            if p in primes:
+                local_results.append(p)
+        local_results.sort()
+        if len(local_results) >= 3:
+            results.add(tuple(local_results))
+        # if len(local_results) >= 3:
+        #     increments = []
+        #     for i in range(len(local_results) - 1):
+        #         if increments.count(local_results[i + 1] - local_results[i]) == 2:
+        #             results.append(local_results)
+        #             break
+        #         else:
+        #             increments.append(local_results[i + 1] - local_results[i])
+
+    return sorted(results)
 
 
 def problem_50():
@@ -658,5 +661,13 @@ def problem_53():
     return len(results)
 
 
+def problem_56():
+    maximum = 0
+    for a in range(2, 101):
+        for b in range(2, 101):
+            power = sum(int(x) for x in str(a ** b))
+            maximum = power if power > maximum else maximum
+    return maximum
+
 if __name__ == '__main__':
-    print(problem_52())
+    print(problem_56())
