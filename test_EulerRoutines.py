@@ -1,6 +1,7 @@
 import unittest
 from main import EulerRoutines, Numeral
 import numpy as np
+from Card import Card, PokerHand
 
 
 class TestEulerRoutines(unittest.TestCase):
@@ -67,9 +68,33 @@ class TestEulerRoutines(unittest.TestCase):
                     EulerRoutines.number_name(number)
 
     def test_rotate_digits(self):
-        expected = set((197, 971, 719))
+        expected = {197, 971, 719}
         actual = EulerRoutines.rotate_digits(197)
         self.assertEqual(expected, actual)
+
+    def test_is_palindromic(self):
+        expected_true = (585, 101, 121, 1313131, 12345678987654321)
+        expected_false = (112, 121211111, 433434333333)
+        for n in expected_true:
+            self.assertTrue(EulerRoutines.is_palindromic(n))
+        for n in expected_false:
+            self.assertFalse(EulerRoutines.is_palindromic(n))
+
+    def test_two_base_palindromic(self):
+        expected_true = [585]
+        for n in expected_true:
+            self.assertTrue(EulerRoutines.two_base_palindromic(n))
+
+    def test_truncate_numbers(self):
+        sample = 12345678
+        expected_results = np.array([12345678, 2345678, 345678, 45678, 5678, 678, 78, 8,
+                                     1234567, 123456, 12345, 1234, 123, 12, 1], dtype=int)
+        self.assertTrue(np.array_equal(EulerRoutines.truncate_numbers(sample), expected_results))
+
+    def test_concatenated_product(self):
+        sample = (192, 3)
+        expected_result = "192384576"
+        self.assertEqual(expected_result, EulerRoutines.concatenated_product(*sample))
 
 
 class TestNumeral(unittest.TestCase):
@@ -83,9 +108,46 @@ class TestNumeral(unittest.TestCase):
 
     def test_numerals_name(self):
         numbers = (1, 12, 34, 64, 109, 345)
-        for n in numbers:
+        correct = ("one", "twelve", "thirty-four", "sixty-four", "one hundred and nine", "three hundred and forty-five")
+        for name, n in zip(correct, numbers):
             numeral = Numeral(n)
-            self.assertEqual(str(n), numeral.name)
+            self.assertEqual(name, numeral.name)
+
+
+class TestCard(unittest.TestCase):
+
+    def test_init(self):
+        c = "4H"
+        self.assertEqual(Card(c).value, c[0])
+        self.assertEqual(Card(c).suit, c[1])
+
+        with self.assertRaises(ValueError):
+            Card("bla")
+
+    def test_eq(self):
+        values = "2, 3, 4, 5, 6, 7, 8, 9, 10, Jack, Queen, King, Ace".split(", ")
+        for i in range(len(values) - 1):
+            self.assertEqual(Card(values[i], "S"), Card(values[i], "D"))
+            self.assertTrue(Card(values[i + 1], "S") > Card(values[i], "S"))
+
+    def test_other_comparison(self):
+        values = "2, 3, 4, 5, 6, 7, 8, 9, 10, Jack, Queen, King, Ace".split(", ")
+        for i in range(len(values) - 1):
+            self.assertTrue(Card(values[i], "S") < Card(values[i + 1], "D"))
+            self.assertTrue(Card(values[i + 1], "S") >= Card(values[i], "S"))
+
+
+class TestPokerHand(unittest.TestCase):
+    royal_flush = [Card("10", "S"), Card("Jack", "S"), Card("Queen", "S"), Card("King", "S"), Card("Ace", "S")]
+    hand_royal_flush = PokerHand(royal_flush)
+
+    def test_is_royal_flush(self):
+        h = TestPokerHand.hand_royal_flush
+        self.assertTrue(h.is_royal_flush())
+
+    def test_highest_card(self):
+        h = TestPokerHand.hand_royal_flush
+        self.assertEqual(Card("Ace", "S"), h.highest_card())
 
 
 if __name__ == '__main__':

@@ -1,12 +1,11 @@
-from functools import reduce
+import functools
+import math
 
 import numpy as np
 from typing import Union
 
 
 class EulerRoutines:
-
-    # @TODO: use functool.cache decorator
     _primes = np.array([], dtype=int)  # cache primes
 
     @staticmethod
@@ -26,6 +25,7 @@ class EulerRoutines:
         return product
 
     @staticmethod
+    @functools.cache
     def is_prime(number: int):
         if number < 2:
             return False
@@ -164,6 +164,50 @@ class EulerRoutines:
 
         return Numeral(number).name
 
+    @staticmethod
+    def is_palindromic(number):
+        string = str(number)
+        for i in range(int(len(string) / 2)):
+            if string[i] != string[-i - 1]:
+                return False
+        return True
+
+    @staticmethod
+    def two_base_palindromic(number):
+        string10 = str(number)
+        string2 = bin(number)[2:]
+        for i in range(int(len(string10) / 2)):
+            if string10[i] != string10[-i - 1]:
+                return False
+        for i in range(int(len(string2) / 2)):
+            if string2[i] != string2[-i - 1]:
+                return False
+        return True
+
+    @staticmethod
+    def truncate_numbers(number, from_front=True, from_end=True):
+        u"""Returns array of numbers created from truncating digits."""
+        results = np.array([number], dtype=int)
+        if from_front:
+            other = np.fromiter((str(number)[i:] for i in range(1, len(str(number)))), dtype=int)
+            results = np.append(results, other)
+        if from_end:
+            other = np.fromiter((str(number)[:-i] for i in range(1, len(str(number)))), dtype=int)
+            results = np.append(results, other)
+        return results
+
+    @staticmethod
+    def concatenated_product(number, integer):
+        if integer <= 1:
+            raise ValueError
+        return "".join(str(number * x) for x in range(1, integer + 1))
+
+    @staticmethod
+    @functools.cache
+    def pentagonal_number(n: int):
+        u"""Return pentagonal number for given integer n."""
+        return int(n * (3 * n - 1) / 2)
+
 
 class Numeral:
     _numerals = {}  # cache names of numbers
@@ -299,11 +343,13 @@ def problem_27():
     # Therefore, begin with searching all primes below 1000
     possible_b = EulerRoutines.primes(1000)
 
-    def f(n, a, b): return n ** 2 + a * n + b
+    def f(n, a, b):
+        return n ** 2 + a * n + b
+
     max_n = 0
     A, B = 0, 0
     for b in possible_b:
-        for a in np.arange(-10**3, 10**3, 1, dtype=int):
+        for a in np.arange(-10 ** 3, 10 ** 3, 1, dtype=int):
             n = 0
             while True:
                 if not EulerRoutines.is_prime(f(n, a, b)):
@@ -317,11 +363,11 @@ def problem_27():
 
 def problem_30():
     # brute force approach
-    upper_limit = 6 * 9**5
+    upper_limit = 6 * 9 ** 5
     number = 2  # because why not
     results = np.array([])
     while True:
-        if number == np.sum(np.array([int(x)**5 for x in str(number)])):
+        if number == np.sum(np.array([int(x) ** 5 for x in str(number)])):
             results = np.append(results, np.array([number]))
         number += 1
         if number == upper_limit:
@@ -387,7 +433,7 @@ def problem_33():
                                 results.append((numerator, denominator))
                         except ZeroDivisionError:
                             continue
-    res = reduce(lambda x, y: x * y, (Fraction(x[0], x[1]) for x in results))
+    res = functools.reduce(lambda x, y: x * y, (Fraction(x[0], x[1]) for x in results))
     return res
 
 
@@ -422,6 +468,52 @@ def problem_35():
     return counter, results
 
 
+def problem_36():
+    results = []
+    for i in range(1, 1000000):
+        if EulerRoutines.two_base_palindromic(i):
+            results.append(i)
+
+    return results, sum(results)
+
+
+def problem_37():
+    found = []
+
+    # Starts with 3-digit numbers
+    def t(n):
+        return all(map(EulerRoutines.is_prime, EulerRoutines.truncate_numbers(n)))
+
+    for p in EulerRoutines.primes(1000000):
+        if t(p): found.append(p)
+    # Remove 2, 3, 5, 7
+    found = found[4:]
+    return found, sum(found)
+
+
+def problem_38():
+    solutions = []
+    for number in range(2, 10000):
+        i = 1
+        while True:
+            i += 1
+            product = EulerRoutines.concatenated_product(number, i)
+            length = len(str(product))
+            if length > 9:
+                break
+            elif length < 9:
+                continue
+            if EulerRoutines.is_pandigital(product):
+                solutions.append((int(product), number, i))
+
+    return max(solutions), solutions
+
+
+def problem_40():
+    seq = "".join(str(x) for x in range(1, 10 ** 6 + 1))
+    return functools.reduce(lambda x, y: x * y, (int(seq[10 ** i - 1]) for i in range(1, 7)))
+
+
 def problem_41():
     max_n = 0
     for number in EulerRoutines.pandigital_numbers(9, 3):
@@ -442,7 +534,9 @@ def problem_42():
     for w in new_words:
         words = np.append(words, w.replace('"', ''))
 
-    def func(n): return int(0.5 * n * (n + 1))
+    def func(n):
+        return int(0.5 * n * (n + 1))
+
     values = set([func(x) for x in range(1, 2500)])
     results = []
     for word in words:
@@ -452,21 +546,117 @@ def problem_42():
     return results
 
 
+def problem_43():
+    divisors = (2, 3, 5, 7, 11, 13, 17)
+    pans = EulerRoutines.permute(1234567890)
+    results = []
+
+    def func(number):
+        if number <= 987654321:
+            return False
+
+        for i in range(7):
+            p = str(number)
+            if int(p[i + 1] + p[i + 2] + p[i + 3]) % divisors[i] != 0:
+                return False
+        return True
+
+    for pandigit in pans:
+        if func(pandigit):
+            results.append(pandigit)
+
+    return sum(results), results
+
+
+def problem_44():
+    numbers = dict((n, EulerRoutines.pentagonal_number(n)) for n in range(1, 10 ** 6))
+    results = {}
+
+    def func():
+        for i in range(1, len(numbers)):
+            for j in range(i + 1, len(numbers)):
+                third = (numbers[i] + numbers[j], numbers[i] - numbers[j])
+                if third in numbers.values():
+                    results[(i, j)] = third
+                if third[0] > numbers[10 ** 6 - 1]:
+                    return
+
+    func()
+    best = 10 ** 5
+    for key in results.keys():
+        if results[key] < best:
+            best = results[key]
+
+    return best
+
+
+# ## DOES NOT WORK
+# def problem_49():
+#     primes = np.fromiter(filter(lambda x: len(str(x)) == 4, EulerRoutines.primes(10000)), dtype=int)
+#     results = []
+#     for prime in primes:
+#         permutations = EulerRoutines.permute(prime)
+#         local_results = []
+#         for p in set(permutations):
+#             if p in primes:
+#                 local_results.append(p)
+#         local_results.sort()
+#         if len(local_results) >= 3:
+#             increments = []
+#             for i in range(len(local_results) - 1):
+#                 if increments.count(local_results[i + 1] - local_results[i]) == 2:
+#                     results.append(local_results)
+#                     break
+#                 else:
+#                     increments.append(local_results[i + 1] - local_results[i])
+#
+#     return results
+
+
+def problem_50():
+    u"""Find prime below 10^6 that can be written as a sum of consecutive primes."""
+    primes = EulerRoutines.primes(1000000)
+    primes_set = set(primes)
+    results = []
+
+    for i in range(len(primes)):
+        number = primes[i]
+        for j in range(i + 1, len(primes)):
+            number += primes[j]
+            if number > primes[-1]:
+                break
+            if number in primes_set:
+                results.append((j - i, number))
+
+    return max(results)
+
+
+def problem_52():
+    number = 123456
+    while True:
+        number += 1
+        if number % 2 == 0:
+            continue
+        perms = EulerRoutines.permute(number)
+        if all(x * number in perms for x in range(2, 7)):
+            return number
+
+
+def problem_53():
+
+    func = lambda n, r: functools.reduce(lambda x, y: x * y, (n - r + i for i in range(1, r + 1)))
+
+    @functools.cache
+    def factorial(n):
+        return math.factorial(n)
+
+    results = set()
+    for n in range(1, 101):
+        for r in range(1, n + 1):
+            if func(n, r) >= factorial(r) * 10**6:
+                results.add((n, r))
+    return len(results)
+
+
 if __name__ == '__main__':
-    pass
-    # number = problem_5()
-    # print(number)
-    # print(problem_30())
-    # print(problem_31())
-    # print(problem_32())
-    # print(problem_27())
-    # res = problem_42()
-    # print(len(res), res)
-    # print(problem_41())
-    # res34 = problem_34()
-    # print(res34)
-    # print(sum(res34))
-    # print(problem_12())
-    # print(problem_19())
-    # print(problem_35())
-    print(problem_33())
+    print(problem_52())
