@@ -96,6 +96,13 @@ class TestEulerRoutines(unittest.TestCase):
         expected_result = "192384576"
         self.assertEqual(expected_result, EulerRoutines.concatenated_product(*sample))
 
+    def test_reverse_number(self):
+        sample = (123, 1, 456, 123456789)
+        expected_results = (321, 1, 654,  987654321)
+        for s, res in zip(sample, expected_results):
+            print(s, res)
+            self.assertEqual(res, EulerRoutines.reverse_number(s))
+
 
 class TestNumeral(unittest.TestCase):
 
@@ -112,42 +119,6 @@ class TestNumeral(unittest.TestCase):
         for name, n in zip(correct, numbers):
             numeral = Numeral(n)
             self.assertEqual(name, numeral.name)
-
-
-class TestCard(unittest.TestCase):
-
-    def test_init(self):
-        c = "4H"
-        self.assertEqual(Card(c).value, c[0])
-        self.assertEqual(Card(c).suit, c[1])
-
-        with self.assertRaises(ValueError):
-            Card("bla")
-
-    def test_eq(self):
-        values = "2, 3, 4, 5, 6, 7, 8, 9, 10, Jack, Queen, King, Ace".split(", ")
-        for i in range(len(values) - 1):
-            self.assertEqual(Card(values[i], "S"), Card(values[i], "D"))
-            self.assertTrue(Card(values[i + 1], "S") > Card(values[i], "S"))
-
-    def test_other_comparison(self):
-        values = "2, 3, 4, 5, 6, 7, 8, 9, 10, Jack, Queen, King, Ace".split(", ")
-        for i in range(len(values) - 1):
-            self.assertTrue(Card(values[i], "S") < Card(values[i + 1], "D"))
-            self.assertTrue(Card(values[i + 1], "S") >= Card(values[i], "S"))
-
-
-class TestPokerHand(unittest.TestCase):
-    royal_flush = [Card("10", "S"), Card("Jack", "S"), Card("Queen", "S"), Card("King", "S"), Card("Ace", "S")]
-    hand_royal_flush = PokerHand(royal_flush)
-
-    def test_is_royal_flush(self):
-        h = TestPokerHand.hand_royal_flush
-        self.assertTrue(h.is_royal_flush())
-
-    def test_highest_card(self):
-        h = TestPokerHand.hand_royal_flush
-        self.assertEqual(Card("Ace", "S"), h.highest_card())
 
 
 if __name__ == '__main__':

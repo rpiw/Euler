@@ -210,6 +210,10 @@ class EulerRoutines:
         u"""Return pentagonal number for given integer n."""
         return int(n * (3 * n - 1) / 2)
 
+    @staticmethod
+    def reverse_number(number: int) -> int:
+        return int("".join([str(number)[i] for i in range(len(str(number)) - 1, -1, -1)]))
+
 
 class Numeral:
     _numerals = {}  # cache names of numbers
@@ -661,6 +665,22 @@ def problem_53():
     return len(results)
 
 
+def problem_55():
+    results = []
+    for i in range(1, 10001):
+        iterations = 0
+        number = i
+        while iterations < 50:
+            number = number + EulerRoutines.reverse_number(number)
+            if EulerRoutines.is_palindromic(number):
+                break
+            iterations += 1
+        else:
+            if iterations == 50:
+                results.append(number)
+    return len(results)
+
+
 def problem_56():
     maximum = 0
     for a in range(2, 101):
@@ -669,5 +689,6 @@ def problem_56():
             maximum = power if power > maximum else maximum
     return maximum
 
+
 if __name__ == '__main__':
-    print(problem_56())
+    print(problem_55())
