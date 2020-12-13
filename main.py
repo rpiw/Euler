@@ -690,5 +690,33 @@ def problem_56():
     return maximum
 
 
+def problem99():
+    from math import log
+    numbers = []
+    max_number = 0
+    with open("problem99.txt", 'r') as fi:
+        for line in fi.readlines():
+            numbers.append(tuple(int(x) for x in line.replace('\n', '').split(',')))
+
+    max_line = 0
+    lenght = 0
+    for i in range(len(numbers)):
+        p = log(numbers[i][0], 2) * numbers[i][1]
+        p_len = len(str(p))
+        if p_len > lenght:
+            max_number = p
+            max_line = i
+            lenght = len(str(p))
+        elif p_len == lenght:
+            if p > max_number:
+                max_number = p
+                max_line = i
+                lenght = p_len
+        else:
+            continue
+
+    return max_line + 1
+
+
 if __name__ == '__main__':
-    print(problem_55())
+    print(problem99())
