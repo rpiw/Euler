@@ -690,17 +690,8 @@ def problem_56():
 
 
 def problem_92():
-    from SquareDigitChain import SquareDigitChain as sdc
-    already_found = set()
-    counter = {1: 0, 89: 0}
-    for i in range(10 ** 7, 2, -1):
-        if i not in already_found:
-            chain = sdc(i)
-            already_found |= set(chain.chain)
-            counter[chain.end] += 1
-        else:
-            counter[89] += 1
-    return counter
+    from SquareDigitChain import SquareDigitChain
+    return SquareDigitChain.classify()
 
 
 def problem96():
