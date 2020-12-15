@@ -650,7 +650,6 @@ def problem_52():
 
 
 def problem_53():
-
     func = lambda n, r: functools.reduce(lambda x, y: x * y, (n - r + i for i in range(1, r + 1)))
 
     @functools.cache
@@ -660,7 +659,7 @@ def problem_53():
     results = set()
     for n in range(1, 101):
         for r in range(1, n + 1):
-            if func(n, r) >= factorial(r) * 10**6:
+            if func(n, r) >= factorial(r) * 10 ** 6:
                 results.add((n, r))
     return len(results)
 
@@ -688,6 +687,36 @@ def problem_56():
             power = sum(int(x) for x in str(a ** b))
             maximum = power if power > maximum else maximum
     return maximum
+
+
+def problem_92():
+    from SquareDigitChain import SquareDigitChain as sdc
+    already_found = set()
+    counter = {1: 0, 89: 0}
+    for i in range(10 ** 7, 2, -1):
+        if i not in already_found:
+            chain = sdc(i)
+            already_found |= set(chain.chain)
+            counter[chain.end] += 1
+        else:
+            counter[89] += 1
+    return counter
+
+
+def problem96():
+    u"""sudoku!"""
+    with open("sudoku_problem96.txt", 'r') as fi:
+        sudokus = fi.readlines()
+    sudokus = list((x.replace("\n", '') for x in sudokus if "Grid" not in x))
+    sudokus = list(sudokus[i: i + 9] for i in range(0, len(sudokus), 9))
+    new_sudokus = []
+    for sudoku in sudokus:
+        new_sudoku = []
+        for line in sudoku:
+            line = list(int(x) for x in line)
+            new_sudoku.append(line)
+        new_sudokus.append(new_sudoku)
+    print(new_sudokus)
 
 
 def problem99():
@@ -719,4 +748,4 @@ def problem99():
 
 
 if __name__ == '__main__':
-    print(problem99())
+    print(problem_92())
