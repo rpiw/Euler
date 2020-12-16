@@ -214,6 +214,37 @@ class EulerRoutines:
     def reverse_number(number: int) -> int:
         return int("".join([str(number)[i] for i in range(len(str(number)) - 1, -1, -1)]))
 
+    @staticmethod
+    def traverse_matrix(matrix, allowed_moves="r l d u", target="minimum"):
+        u"""Traverse through matrix by searching for minimal/maximal sum of elements.
+        :matrix - np.array 2x2,
+        :allowed_moves - str with letter r l d u for right, left, down, up, delimiter should be a blank space.
+        :target - if target is 'minimum' - the sum on path is minimized, if target is 'maximum', sum is maximized"""
+        path = []
+        allowed_steps = allowed_moves.split(" ")
+        steps = {"r": (0, 1), "l": (0, -1), "d": (1, 0), "u": (-1, 0)}
+        x0, y0 = 0, 0
+        x, y = x0, y0
+        value = matrix[x, y]
+        while (x, y) != matrix.shape:
+            values = {}
+            local_minimal = 9999
+
+            for step in allowed_steps:
+                try:
+                    values[step] = value + matrix[[x + steps[step][0], y + steps[step][1]]]
+                except IndexError:
+                    continue
+                if values[step] <= local_minimal:
+                    local_minimal = values[step]
+                    next_position = (x + steps[step][0], y + steps[step][1])
+                raise NotImplemented
+
+    @staticmethod
+    def recurring_fraction(numerator: int, denominator: int):
+        import decimal
+        integer_part = np.floor(numerator / denominator)
+
 
 class Numeral:
     _numerals = {}  # cache names of numbers
@@ -338,6 +369,10 @@ def problem_19():
         year += 1
 
     return sundays
+
+
+def problem_26():
+    pass
 
 
 def problem_27():
@@ -689,6 +724,38 @@ def problem_56():
     return maximum
 
 
+def problem_79():
+    with open("passcode.txt", 'r') as fi:
+        passcodes = fi.readlines()
+    passcode = [code.replace('\n', '') for code in passcodes]
+
+    numbers = dict((n, []) for n in range(0, 10))
+
+    for seq in passcode:
+        for number in range(0, 10):
+            for other in range(0, 10):
+                if str(number) in seq and str(other) in seq and number != other:
+                    if seq.index(str(number)) > seq.index(str(other)):
+                        numbers[number].append(other)
+
+    numbers_in_code = set()
+    for i in numbers.keys():
+        if numbers[i]:
+            numbers_in_code.add(i)
+            numbers_in_code.update(numbers[i])
+
+    numbers = {k: set(v) for (k, v) in numbers.items() if k in numbers_in_code}
+    code = [str(x) for x in sorted(numbers, key=numbers.get)]
+
+    return "".join(code)
+
+
+def problem_81():
+    u"""Graph traversal problem."""
+    matrix = np.loadtxt("p081_matrix.txt", delimiter=',')
+    print(matrix)
+
+
 def problem_92():
     from SquareDigitChain import SquareDigitChain
     return SquareDigitChain.classify()
@@ -739,4 +806,4 @@ def problem99():
 
 
 if __name__ == '__main__':
-    print(problem_92())
+    print(problem_79())

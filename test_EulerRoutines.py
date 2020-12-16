@@ -103,6 +103,11 @@ class TestEulerRoutines(unittest.TestCase):
             print(s, res)
             self.assertEqual(res, EulerRoutines.reverse_number(s))
 
+    def test_traverse_matrix(self):
+        matrix = np.loadtxt("p081_matrix.txt", delimiter=',')
+        EulerRoutines.traverse_matrix(matrix)
+        self.fail("Not implemented yet")
+
 
 class TestNumeral(unittest.TestCase):
 
