@@ -1,4 +1,5 @@
 import functools
+import itertools
 import math
 
 import numpy as np
@@ -724,6 +725,41 @@ def problem_56():
     return maximum
 
 
+def problem_68():
+    solutions = []
+
+    def check_solution(a, b, c, d, e, f, g, h, i, j):
+        if a + b + c == d + c + e == f + e + g == h + g + i == j + i + b:
+            return "".join(str(x) for x in (a, b, c, d, c, e, f, e, g, h, g, i, j, i, b))
+        else:
+            return False
+
+    # TODO: należy uwzględnić powtarzanie permutacji i opis wyniku
+    permutations = itertools.permutations(range(1, 11))
+    for permutation in permutations:
+        solution = check_solution(*permutation)
+        if solution:
+            solutions.append(solution)
+    return max(solutions)
+
+
+def problem_74():
+    from math import factorial
+    factorials = {str(x): factorial(x) for x in range(0, 10)}
+    results = []
+    for number in range(69, 10 ** 6 + 1):
+        chains = {number}
+        while True:
+            number = sum(factorials[x] for x in str(number))
+            if number in chains:
+                break
+            chains.add(number)
+        if len(chains) == 60:
+            results.append(chains)
+
+    return len(results)
+
+
 def problem_79():
     with open("passcode.txt", 'r') as fi:
         passcodes = fi.readlines()
@@ -806,4 +842,4 @@ def problem99():
 
 
 if __name__ == '__main__':
-    print(problem_79())
+    print(problem_68())
