@@ -419,30 +419,15 @@ def problem_30():
 
 
 def problem_31():
-    solutions = 0
     coins = np.array([1, 2, 5, 10, 20, 50, 100, 200], dtype=np.int16)
-    factors = np.zeros(8, dtype=np.int16)
-    solution = np.array([0, 0, 0, 0, 0, 0, 0, 1], dtype=int)
 
-    solutions = []
+    target = 200
+    solutions = [1] + [0] * target
+    for coin in coins:
+        for i in range(coin, target + 1):
+            solutions[i] += solutions[i - coin]
 
-    def func(factors):
-        return np.sum(factors * coins) == 200
-
-    # Brute force approach, 8 loops: 4 800 000 000 possibilities, no way to go
-    # for one in range(0, 200):
-    #     for two in range(0, 100):
-    #         for five in range(0, 40):
-    #             for ten in range(0, 20):
-    #                 for twenty in range(0, 25):
-    #                     for fifty in range(0, 4):
-    #                         for one_hundred in (0, 1, 2):
-    #                             for two_hundreds in (0, 1):
-    #                                 if func(np.array([one, two, five, ten, twenty, fifty, one_hundred, two_hundreds])):
-    #                                     solutions.append(np.array([one, two, five, ten, twenty, fifty,
-    #                                                                one_hundred, two_hundreds]))
-
-    return solutions, len(solutions)
+    return solutions[target]
 
 
 def problem_32():
@@ -842,4 +827,4 @@ def problem99():
 
 
 if __name__ == '__main__':
-    print(problem_68())
+    print(problem_31())
