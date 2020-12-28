@@ -108,6 +108,14 @@ class TestEulerRoutines(unittest.TestCase):
         EulerRoutines.traverse_matrix(matrix)
         self.fail("Not implemented yet")
 
+    def test_gcd(self):
+        expected_output = 6
+        self.assertEqual(expected_output, EulerRoutines.gcd(24, 30, 36))
+
+    def test_coprimes(self):
+        self.assertTrue(EulerRoutines.coprimes(3, 248))
+        self.assertFalse(EulerRoutines.coprimes(3, 6, 9))
+
 
 class TestNumeral(unittest.TestCase):
 

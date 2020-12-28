@@ -29,8 +29,6 @@ class EulerRoutines:
     @staticmethod
     @functools.cache
     def is_prime(number: int):
-        if number < 2:
-            return False
         if EulerRoutines._primes.size > 0 and number < EulerRoutines._primes[-1]:
             return number in EulerRoutines._primes_set
         for d in range(2, np.int(np.ceil(np.sqrt(number))) + 1):
@@ -39,22 +37,25 @@ class EulerRoutines:
         return True
 
     _primes_file_name = "primes.npy"
+    _sieve = "sieve.obj"  # TODO: cache also dict for sieve - if not, cannot use concatenation
 
     @staticmethod
-    def primes(upper_limit: int, algorithm="sieve", cache=True, read=True) -> np.array:
+    def primes(upper_limit: int, algorithm="sieve", cache=True, read=False) -> np.array:
         u"""Return array containing primes below upper_limit integer. Algorithm: brute, sieve.
-        : cache (bool) - is true store primes in an array as a class member EulerRoutines._primes ."""
+        : cache (bool) - is true store primes in an array as a class member EulerRoutines._primes,
+        : read (bool) - DOES NOT WORK."""
 
         start = 3
         if read:
-            read = np.array([])
+            loaded = np.array([])
             try:
-                read = np.load(EulerRoutines._primes_file_name)
+                loaded = np.load(EulerRoutines._primes_file_name)
             except FileNotFoundError:
                 pass
 
-            if read.size > 0:
-                EulerRoutines._primes = np.unique(np.concatenate((EulerRoutines._primes, read)), 0)
+            if loaded.size > 0:
+                EulerRoutines._primes = np.unique(np.concatenate((EulerRoutines._primes, loaded), 0))
+                print("Primes loaded.")
 
         if EulerRoutines._primes.size > 0:
             if EulerRoutines._primes[-1] > upper_limit:
@@ -77,7 +78,7 @@ class EulerRoutines:
             results = np.arange(3, upper_limit, 2, dtype=int)
             sieve = {x: True for x in results}
             print("Preparing for searching primes with Sieve of this ancient greek guy with funny name")
-            print("Space: [{start}, {end}]".format(start=3, end=upper_limit))
+            print("Space: [{start}, {end}]".format(start=start, end=upper_limit))
             for number in results:
                 if sieve[number] and EulerRoutines.is_prime(number):
                     k = number
@@ -89,6 +90,7 @@ class EulerRoutines:
             results = np.append(np.array([2], dtype=int), results)
 
         if cache:
+            print("Caching...")
             EulerRoutines._primes = results
             EulerRoutines._primes_set = set(results)
             np.save(EulerRoutines._primes_file_name, results)
@@ -157,6 +159,19 @@ class EulerRoutines:
             if res == 0 and number // divisor != divisor:
                 results = np.append(results, number // divisor)
         return sorted(results)
+
+    @staticmethod
+    def gcd(number1, number2, *args):
+        u"""Return greatest common divisor."""
+        return max(list(functools.reduce(set.intersection, (set(EulerRoutines.divisors(n)) for n in (
+            number1, number2, *args)))))
+
+    @staticmethod
+    def coprimes(number1, number2, *args):
+        u"""Return true if a greatest common divisor of given numbers is 1."""
+        if EulerRoutines.gcd(number1, number2, *args) == 1:
+            return True
+        return False
 
     @staticmethod
     def number_name(number):
@@ -241,10 +256,20 @@ class EulerRoutines:
                     next_position = (x + steps[step][0], y + steps[step][1])
                 raise NotImplemented
 
-    @staticmethod
-    def recurring_fraction(numerator: int, denominator: int):
-        import decimal
-        integer_part = np.floor(numerator / denominator)
+    # @staticmethod
+    # def recurring_fraction(p: int, q: int, base: int=10):
+    #     digits = [str(x) for x in range(0, base)]
+    #
+    #     occurs = {}
+    #
+    #     string_of_digits = ""
+    #     position = 0
+    #
+    #     while not occurs.get(p, None):
+    #         occurs[p] = position  # the position of place with reminader p
+    #         bp = base * p
+    #         z = math.floor(bp / q)  # index z of digit within: 0 ≤ z ≤ b-1
+    #         p = bp - z * q
 
 
 class Numeral:
@@ -373,7 +398,8 @@ def problem_19():
 
 
 def problem_26():
-    pass
+    results = []
+    return results
 
 
 def problem_27():
@@ -617,6 +643,24 @@ def problem_44():
     return best
 
 
+def problem_46():
+    limit = 10000
+    primes = set(EulerRoutines.primes(limit))
+    numbers = np.array([x for x in range(3, limit, 2) if x not in primes], dtype=int)
+
+    def goldbach(number):
+        for prime in reversed([p for p in primes if p < number]):
+            rest, int_part = math.modf(math.sqrt((number - prime) / 2))
+            if math.isclose(rest, 0, rel_tol=1e-7):
+                return False
+        return True
+
+    for number in numbers:
+        if goldbach(number):
+            return number
+    return None
+
+
 def problem_49():
     primes = np.fromiter(filter(lambda x: len(str(x)) == 4, EulerRoutines.primes(10000)), dtype=int)
     results = set()
@@ -827,4 +871,4 @@ def problem99():
 
 
 if __name__ == '__main__':
-    print(problem_31())
+    print(problem_46())
