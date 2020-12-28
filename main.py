@@ -1,7 +1,7 @@
 import functools
 import itertools
 import math
-
+from typing import Tuple
 import numpy as np
 from typing import Union
 
@@ -255,6 +255,18 @@ class EulerRoutines:
                     local_minimal = values[step]
                     next_position = (x + steps[step][0], y + steps[step][1])
                 raise NotImplemented
+
+    @staticmethod
+    def factorize(number: int):
+        u"""Factorize number. Returns list of tuple in form: [(prime, number_of_occurrences)]"""
+        primes = EulerRoutines.primes(number)
+        results = {p: 0 for p in primes}
+        while number != 1:
+            for prime in primes:
+                if number % prime == 0:
+                    results[prime] += 1
+                    number /= prime
+        return ((key, value) for key, value in results.items() if value != 0)
 
     # @staticmethod
     # def recurring_fraction(p: int, q: int, base: int=10):
