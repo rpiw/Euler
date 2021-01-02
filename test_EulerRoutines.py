@@ -117,7 +117,7 @@ class TestEulerRoutines(unittest.TestCase):
         self.assertFalse(EulerRoutines.coprimes(3, 6, 9))
 
     def test_factorize(self):
-        self.assertTrue(((3, 1), (5, 1)), EulerRoutines.factorize(15))
+        self.assertEqual(((3, 1), (5, 1)), EulerRoutines.factorize(15))
 
 
 class TestNumeral(unittest.TestCase):

@@ -257,31 +257,16 @@ class EulerRoutines:
                 raise NotImplemented
 
     @staticmethod
-    def factorize(number: int):
-        u"""Factorize number. Returns list of tuple in form: [(prime, number_of_occurrences)]"""
-        primes = EulerRoutines.primes(number)
-        results = {p: 0 for p in primes}
-        while number != 1:
-            for prime in primes:
-                if number % prime == 0:
-                    results[prime] += 1
-                    number /= prime
-        return ((key, value) for key, value in results.items() if value != 0)
+    def factorize(number: int, x: int=2):
+        u"""Factorize. Algorithm: Pollard's rho algorithm"""
 
-    # @staticmethod
-    # def recurring_fraction(p: int, q: int, base: int=10):
-    #     digits = [str(x) for x in range(0, base)]
-    #
-    #     occurs = {}
-    #
-    #     string_of_digits = ""
-    #     position = 0
-    #
-    #     while not occurs.get(p, None):
-    #         occurs[p] = position  # the position of place with reminader p
-    #         bp = base * p
-    #         z = math.floor(bp / q)  # index z of digit within: 0 ≤ z ≤ b-1
-    #         p = bp - z * q
+        for cycle in itertools.count(1):
+            y = x
+            for i in range(2 ** cycle):
+                x = (x * x + 1) % number
+                factor = math.gcd(x - y, number)
+                if factor > 1:
+                    return factor
 
 
 class Numeral:
@@ -673,6 +658,26 @@ def problem_46():
     return None
 
 
+def problem_47():
+    results = []
+    limit = 100000
+    EulerRoutines.primes(limit)
+    counter = 0
+    current = []
+    for number in range(3, limit + 1):
+        new_factors = EulerRoutines.factorize(number)
+        if current != new_factors:
+            counter += 1
+            results.append(current)
+        elif counter == 4:
+            return results
+        else:
+            counter = 0
+            results = []
+        number += 1
+    print("Could not find solution")
+
+
 def problem_49():
     primes = np.fromiter(filter(lambda x: len(str(x)) == 4, EulerRoutines.primes(10000)), dtype=int)
     results = set()
@@ -839,19 +844,21 @@ def problem_92():
 
 
 def problem96():
-    u"""sudoku!"""
-    with open("sudoku_problem96.txt", 'r') as fi:
-        sudokus = fi.readlines()
-    sudokus = list((x.replace("\n", '') for x in sudokus if "Grid" not in x))
-    sudokus = list(sudokus[i: i + 9] for i in range(0, len(sudokus), 9))
-    new_sudokus = []
+    u"""Sudoku solver implemented in my other repo at https://github.com/rpiw/LearnPython.
+    Basically the easiest way to implement backtracking. Slow as hell"""
+    from Sudoku import Sudoku
+    input_file = "sudoku_problem96.txt"
+    sudokus = Sudoku.read_from_file(input_file)
+
+    def digit(sudoku: Sudoku):
+        return int("".join(map(str, [sudoku.solution[0, i] for i in (0, 1, 2)])))
+
     for sudoku in sudokus:
-        new_sudoku = []
-        for line in sudoku:
-            line = list(int(x) for x in line)
-            new_sudoku.append(line)
-        new_sudokus.append(new_sudoku)
-    print(new_sudokus)
+        sudoku.solve()
+
+    import pickle
+    pickle.dump(sudokus, open("sudokus.obj", 'wb'))
+    return sum(digit(sudoku) for sudoku in sudokus)
 
 
 def problem99():
@@ -883,4 +890,4 @@ def problem99():
 
 
 if __name__ == '__main__':
-    print(problem_46())
+    print(problem96())
