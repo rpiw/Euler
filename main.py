@@ -1,14 +1,44 @@
 import functools
 import itertools
 import math
-from typing import Tuple
 import numpy as np
 from typing import Union
+import logging
+
+logger = logging.getLogger(__name__)
+
+logger.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+
+console_formatter = logging.Formatter('(%ascitime)s - %(levelname)s - %(message)s')
+console_handler.setFormatter(console_formatter)
+
+logger.addHandler(console_handler)
 
 
-class EulerRoutines:
+class LoggingHelper:
+    u"""Class keeping logging simple. Let your class inherit from this one for simple logging."""
+    def __init__(self, logger_name: str = __name__, level=logging.DEBUG):
+        self.logger = logging.getLogger(logger_name)
+        self.level = level
+        self.logger.setLevel(self.level)
+
+        self.console_handler = logging.StreamHandler()
+        self.console_handler.setLevel(self.level)
+
+        self.console_formatter = logging.Formatter('(%ascitime)s - %(levelname)s - %(message)s')
+        self.console_handler.setFormatter(self.console_formatter)
+
+        self.logger.addHandler(self.console_handler)
+
+
+class EulerRoutines(LoggingHelper):
     _primes = np.array([], dtype=int)  # cache primes
     _primes_set = set()
+
+    logger_name = __name__
 
     @staticmethod
     def pandigital_product(number1: int, number2: int) -> int:
@@ -29,6 +59,7 @@ class EulerRoutines:
     @staticmethod
     @functools.cache
     def is_prime(number: int):
+        EulerRoutines().logger.info(f"Checking if {number} is prime.")
         if EulerRoutines._primes.size > 0 and number < EulerRoutines._primes[-1]:
             return number in EulerRoutines._primes_set
         for d in range(2, np.int(np.ceil(np.sqrt(number))) + 1):
@@ -50,8 +81,8 @@ class EulerRoutines:
             loaded = np.array([])
             try:
                 loaded = np.load(EulerRoutines._primes_file_name)
-            except FileNotFoundError:
-                pass
+            except IOError:
+                loaded = np.array([], dtype=int)
 
             if loaded.size > 0:
                 EulerRoutines._primes = np.unique(np.concatenate((EulerRoutines._primes, loaded), 0))
@@ -75,7 +106,7 @@ class EulerRoutines:
             results = np.append(EulerRoutines._primes, results)
 
         elif algorithm == "sieve":
-            results = np.arange(3, upper_limit, 2, dtype=int)
+            results = np.arange(3, upper_limit + 1, 2, dtype=int)
             sieve = {x: True for x in results}
             print("Preparing for searching primes with Sieve of this ancient greek guy with funny name")
             print("Space: [{start}, {end}]".format(start=start, end=upper_limit))
@@ -257,7 +288,7 @@ class EulerRoutines:
                 raise NotImplemented
 
     @staticmethod
-    def factorize(number: int, x: int=2):
+    def factorize(number: int, x: int = 2):
         u"""Factorize. Algorithm: Pollard's rho algorithm"""
 
         for cycle in itertools.count(1):
@@ -267,6 +298,30 @@ class EulerRoutines:
                 factor = math.gcd(x - y, number)
                 if factor > 1:
                     return factor
+
+    @staticmethod
+    def euler_totient_function(number: int) -> int:
+        u"""Compute Euler's totient function."""
+        primes = EulerRoutines.primes(number)
+        result = number
+        for prime in primes:
+            if number % prime == 0:
+                result *= 1 - 1 / prime
+        return result
+
+    @staticmethod
+    def euler_totient_function_array(max_n: int):
+        u"""Compute Euler's totient function for all n from 1 to max_n. Return dict."""
+        primes = EulerRoutines.primes(max_n)
+        inverted_primes = [1 - 1 / p for p in primes]
+        results = {}
+        n = 1
+        while n < max_n:
+            result = n
+            for prime in [x for x in inverted_primes if x <= n]:
+                result *= prime
+            results[n] = result
+        return results
 
 
 class Numeral:
@@ -771,6 +826,35 @@ def problem_56():
     return maximum
 
 
+def problem_59():
+    cipher = np.loadtxt("p059_cipher.txt", delimiter=',', dtype=int)
+    most_common = np.bincount(cipher).argmax()  # Space symbol ' ' or letter e
+    first_occurence = np.where(cipher == most_common)[0][0]
+    print(most_common ^ ord(' '))
+    print(first_occurence)
+    # i_p
+    with open("words.txt", 'r') as fi:
+        words = fi.readlines()[0]
+    words = set(words.replace('"', '').split(','))
+    words2letters = set(w for w in words if len(w) == 2)
+    print(words2letters)
+
+
+def problem_67():
+    matrix = []
+    with open("p067_triangle.txt", 'r') as fi:
+        for line in fi.readlines():
+            line = [int(x) for x in line.replace('\n', '').split()]
+            matrix.append(line)
+
+    # Possible transition: next index is equal to previous or previous + 1
+    for i in range(len(matrix) - 2, -1, -1):
+        for j in range(0, i + 1):
+            matrix[i][j] += max(matrix[i + 1][j], matrix[i + 1][j + 1])
+
+    return matrix[0][0]
+
+
 def problem_68():
     solutions = []
 
@@ -787,6 +871,22 @@ def problem_68():
         if solution:
             solutions.append(solution)
     return max(solutions)
+
+
+def problem_69():
+    from operator import itemgetter
+    from decimal import Decimal
+    import time
+    time_start = time.time()
+
+    euler = EulerRoutines.euler_totient_function_array(10**6)  # dict
+    phi = list((n, Decimal(n / x)) for (n, x) in euler.items())
+
+    time_end = time.time()
+
+    print(f"Calculatored in {time_end - time_start}")
+
+    return max(phi, key=itemgetter(1))
 
 
 def problem_74():
@@ -834,8 +934,38 @@ def problem_79():
 
 def problem_81():
     u"""Graph traversal problem."""
-    matrix = np.loadtxt("p081_matrix.txt", delimiter=',')
+    matrix = np.loadtxt("p081_matrix.txt", delimiter=',', dtype=int)
     print(matrix)
+    max_id = (len(matrix) - 1, len(matrix) - 1)
+
+    def adjacent_vertices(x, y):
+        u"""In this problem we move only down and right"""
+        if 0 <= x < max_id[0] and 0 <= y < max_id[1]:
+            vertices = ((x + 1, y), (x, y + 1))
+        elif x == max_id[0] and y < max_id[1]:
+            vertices = [(x, y + 1)]
+        elif x < max_id[0] and y == max_id[1]:
+            vertices = [(x + 1, y)]
+        else:
+            vertices = None
+        return vertices
+
+    current = (0, 0)
+
+    total_value = 0
+    while current != max_id:
+        current_value = matrix[current]
+        total_value += current_value
+        values = {}
+        adjacent = adjacent_vertices(*current)
+        if adjacent:
+            for vertex in adjacent:
+                values[vertex] = total_value + matrix[vertex]
+            current = min(values, key=lambda x: values[x])
+        else:
+            break
+
+    return total_value
 
 
 def problem_92():
@@ -859,6 +989,16 @@ def problem96():
     import pickle
     pickle.dump(sudokus, open("sudokus.obj", 'wb'))
     return sum(digit(sudoku) for sudoku in sudokus)
+
+
+def problem_97():
+    u"""Compute a number of a form: 28433 x 2 ^ 7830457  + 1"""
+    factor_a = 28433
+    base = 2
+    factor_expontial = 7830457
+    rest = 1
+    number = factor_a * pow(base, factor_expontial) + rest
+    return str(number)[:-10]
 
 
 def problem99():
@@ -890,4 +1030,4 @@ def problem99():
 
 
 if __name__ == '__main__':
-    print(problem96())
+    print(problem_69())

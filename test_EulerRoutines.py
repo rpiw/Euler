@@ -5,7 +5,6 @@ from Card import Card, PokerHand
 
 
 class TestEulerRoutines(unittest.TestCase):
-
     primes = np.array([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59,
                        61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127,
                        131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191,
@@ -22,7 +21,7 @@ class TestEulerRoutines(unittest.TestCase):
     def test_primes(self):
         correct_primes = np.loadtxt("primes_correct.txt", dtype=int).flatten()
 
-        new_len = int(1/10 * len(correct_primes))
+        new_len = int(1 / 10 * len(correct_primes))
         my_primes = EulerRoutines.primes(correct_primes[new_len])
 
         self.assertEqual(len(correct_primes[:new_len]), len(my_primes))
@@ -98,7 +97,7 @@ class TestEulerRoutines(unittest.TestCase):
 
     def test_reverse_number(self):
         sample = (123, 1, 456, 123456789)
-        expected_results = (321, 1, 654,  987654321)
+        expected_results = (321, 1, 654, 987654321)
         for s, res in zip(sample, expected_results):
             print(s, res)
             self.assertEqual(res, EulerRoutines.reverse_number(s))
@@ -118,6 +117,13 @@ class TestEulerRoutines(unittest.TestCase):
 
     def test_factorize(self):
         self.assertEqual(((3, 1), (5, 1)), EulerRoutines.factorize(15))
+
+    def test_euler_totient_function(self):
+        expected_outputs = [1, 2, 2, 4, 2, 6, 4, 6, 4, 10, 4, 12, 6, 8, 8, 16, 6, 18, 8, 12, 10, 22, 8, 20, 12, 18,
+                            12, 28, 8, 30, 16, 20, 16, 24, 12, 36, 18, 24, 16, 40, 12, 42, 20, 24, 22, 46, 16, 42, 20,
+                            32, 24, 52, 18, 40, 24, 36, 28, 58, 16, 60, 30, 36, 32, 48, 20, 66, 32, 44]
+        for output, n in zip(expected_outputs, range(2, 101)):
+            self.assertAlmostEqual(output, EulerRoutines.euler_totient_function(n), msg=f"n={n}")
 
 
 class TestNumeral(unittest.TestCase):
