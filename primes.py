@@ -9,18 +9,20 @@ sh = logging.StreamHandler()
 logger.addHandler(sh)
 
 
-def sieve_of_atkin(upper_limit: int) -> np.array:
-    u"""Generate primes from 2 to upper_limit. Algorithm: sieve of Atkin."""
-    results = np.array([2, 3, 5], dtype=int)
-    sieve = np.arange(3, upper_limit, 2)
-    remainders = np.array([1, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 49, 53, 59], dtype=int)
-    is_prime = {False: number for number in sieve}
-    raise NotImplemented
+def timer(function):
+    u"""Measure time and print fancy output to log. Use as decorator."""
+    def inner(*args, **kwargs):
+        time_start = time.time()
+        result = function(*args, **kwargs)
+        time_end = time.time()
+        logger.info(f"Completed {function.__name__} in {time_end - time_start}")
+        return result
+    return inner
 
 
+@timer
 def sieve_of_sundaram(upper_limit: int) -> np.array:
     u"""Generate primes from 2 to upper_limit. Algorithm: sieve of Atking."""
-    time_start = time.time()
     k = (upper_limit - 2) // 2
     numbers = set(range(1, upper_limit))
     for i in range(1, k + 1):
@@ -28,10 +30,21 @@ def sieve_of_sundaram(upper_limit: int) -> np.array:
         while i + j + 2 * i * j <= k:
             numbers.discard(i + j + 2 * i * j)
             j += 1
-    time_end = time.time()
-    logger.info(f"Completed sieve_of_sundaram for limit {upper_limit} in time of: {time_end - time_start}")
     return np.append([2], np.fromiter((2 * x + 1 for x in numbers), dtype=int))
 
 
-if __name__ == '__main__':
-    print(sieve_of_sundaram(10))
+@timer
+def sieve_of_eratosthenes(upper_limit: int) -> np.array:
+    u"""Generate primes from 2 to upper_limit. Algorithm: sieve of Eratosthenes."""
+    sieve = {x: True for x in range(2, upper_limit + 1)}
+    n = 2
+    while n * n <= upper_limit:
+        if sieve[n]:
+            i = 2
+            k = n * i
+            while k <= upper_limit:
+                sieve[k] = False
+                i += 1
+                k = n * i
+        n += 1
+    return np.array([x for x in sieve.keys() if sieve[x]], dtype=int)
