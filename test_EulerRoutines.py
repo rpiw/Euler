@@ -21,10 +21,17 @@ class TestEulerRoutines(unittest.TestCase):
     def test_primes(self):
         correct_primes = np.loadtxt("primes_correct.txt", dtype=int).flatten()
 
-        new_len = int(1 / 10 * len(correct_primes))
-        my_primes = EulerRoutines.primes(correct_primes[new_len])
+        my_primes = EulerRoutines.primes(correct_primes[-1] + 1, read=False)
+        self.assertEqual(len(correct_primes), len(my_primes))
+        for p1, p2 in zip(correct_primes, my_primes):
+            self.assertEqual(p1, p2)
 
-        self.assertEqual(len(correct_primes[:new_len]), len(my_primes))
+        # check reading from file - if new upper_limit is lower than previous, method should read from file and returns
+        # the results
+        new_len = len(correct_primes) // 3
+        my_primes = EulerRoutines.primes(correct_primes[new_len], read=True)
+        correct_primes = np.array([x for x in correct_primes if x <= my_primes[-1]])
+        self.assertEqual(len(correct_primes), len(my_primes))
         for p1, p2 in zip(correct_primes, my_primes):
             self.assertEqual(p1, p2)
 
@@ -141,6 +148,14 @@ class TestNumeral(unittest.TestCase):
         for name, n in zip(correct, numbers):
             numeral = Numeral(n)
             self.assertEqual(name, numeral.name)
+
+
+class TestEulerRoutinesSettings(unittest.TestCase):
+    from main import EulerRoutinesSettings
+
+    def test_init(self):
+        settings = TestEulerRoutinesSettings()
+        print(settings)
 
 
 if __name__ == '__main__':
