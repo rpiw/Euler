@@ -5,6 +5,8 @@ import numpy as np
 from typing import Union
 import logging
 
+from PyFraction import PyFraction
+
 logger = logging.getLogger(__name__)
 
 logger.setLevel(logging.INFO)
@@ -37,7 +39,7 @@ class LoggingHelper:
 
 class EulerRoutinesSettings:
     u"""Class for keeping different settings."""
-    # TODO: track maximum amount of memory for algorithms
+    # TODO: track maximum amount of memory for algorithms and memory management
 
 
 class EulerRoutines(LoggingHelper):
@@ -323,6 +325,88 @@ class EulerRoutines(LoggingHelper):
             results[n] = result
         return results
 
+    @staticmethod
+    def is_square(number: int) -> bool:
+        return number == math.isqrt(number) ** 2
+
+    @staticmethod
+    def solve_pell_equation(n: int, *args):
+        u"""Solve equation of form: x ** 2 - N * y ** 2 == 1 for x, y, N integers.
+        Algorithm: Chakravala method."""
+        numbers = (n,)
+        if args:
+            for item in args:
+                if not isinstance(item, int):
+                    raise TypeError
+            numbers += args
+        max_a, max_b, max_k = 200, 200, 200
+        # logger.info(f"Begin to solve Pell's equation by the Chakravala method. There is {len(numbers)} numbers.")
+
+        solutions = {}
+        for number in numbers:
+            if EulerRoutines.is_square(number):
+                # logger.info(f"The number {number} is perfect square, solution does not exists!")
+                solutions[number] = None  # if number is square, there is no solution at all!
+
+            # ###
+            # a**2 - N * b**2 = k, when k == 1, solution of (a, b, 1) is completed.
+
+            a, b, k = 1, 1, 1
+            # Begin with solution for any k found by a brute force.
+            while a < max_a:
+                k = (a ** 2 - number * b ** 2)
+                if k == int(k):  # and k > 0:
+                    break
+                a += 1
+            else:
+                raise IndexError("Could not find solution.")
+
+            # Then proceed with trivial solution of (a, b, k) = (m, 1, m**2 - N).
+            # After create a new solutions of form (am + NB, a + bm, k(m**2 - N)).
+            # if abs(k) == 1, 2, 4, we can use Brahmagupta's identity
+            found = False
+            while not found:
+                acceptable_m = []
+                distance = 10 ** 10
+                m = 1
+                while True:
+                    if (a + b * m) % abs(k) == 0:
+                        value_to_min = abs(m ** 2 - number)
+                        print(m, value_to_min, distance)
+                        if value_to_min < distance:
+
+                            acceptable_m.append(m)
+                            distance = value_to_min
+
+                        elif value_to_min > distance:
+                            minimal_m = acceptable_m[-2]
+                            print("Brejk")
+                            break
+                        else:
+                            print("What am I doing here?")
+                    m += 1
+
+                m = minimal_m
+                print(a, b, k, m)
+                a, b, k = tuple(((a * m + number * b) / abs(k), (a + b * m / abs(k)), (m ** 2 - number) / k))
+                if abs(k) in (1, 2, 4):
+                    found = True
+            else:
+                solutions[number] = (a, b, k)
+
+        return solutions
+
+    @staticmethod
+    def digital_sum(number: int) -> int:
+        return sum((int(x) for x in str(number)))
+
+    @staticmethod
+    def digital_root(number: int) -> int:
+        root = str(number)
+        while len(str(root)) > 1:
+            root = sum((int(x) for x in str(root)))
+        return root
+
 
 class Numeral:
     _numerals = {}  # cache names of numbers
@@ -388,8 +472,6 @@ class Numeral:
                 if self.factors[-2] or self.factors[-1]:
                     hundred += " and "
             name_parts.append(hundred)
-
-        # TODO: Create a part for thousand
 
         return "".join(reversed(name_parts))
 
@@ -767,25 +849,17 @@ def problem_46():
 def problem_49():
     primes = np.fromiter(filter(lambda x: len(str(x)) == 4, EulerRoutines.primes(10000)), dtype=int)
     results = set()
+
     for prime in primes:
         permutations = EulerRoutines.permute(prime)
         local_results = []
         for p in set(permutations):
-            if p in primes:
+            if p in EulerRoutines._primes_set:
                 local_results.append(p)
         local_results.sort()
-        if len(local_results) >= 3:
-            results.add(tuple(local_results))
-        # if len(local_results) >= 3:
-        #     increments = []
-        #     for i in range(len(local_results) - 1):
-        #         if increments.count(local_results[i + 1] - local_results[i]) == 2:
-        #             results.append(local_results)
-        #             break
-        #         else:
-        #             increments.append(local_results[i + 1] - local_results[i])
-
-    return sorted(results)
+        if len(local_results) == 3:
+            results.add(sorted(tuple(local_results)))
+        return sorted(results)
 
 
 def problem_50():
@@ -878,6 +952,35 @@ def problem_59():
     #             encrypted = decipher(key)
     #             if re.match(pattern, encrypted):
     #                 print(key)
+
+
+def problem_62():
+    number = 100
+    cubes = set()
+
+    while True:
+        cube = number ** 3
+        cubes.add(cube)
+        permuations = EulerRoutines.permute(cube)
+        local_counter = 0
+        for permuation in permuations:
+            pass
+
+
+def problem_63():
+    total = 0
+    for i in range(1, 1000):
+        for j in range(1, 1000):
+            word = str(i ** j)
+            if len(word) == j:
+                total += 1
+            elif len(word) > j:
+                break
+    return total
+
+
+def problem_66():
+    print(EulerRoutines.solve_pell_equation(2, 3, 4))
 
 
 def problem_67():
@@ -1077,4 +1180,4 @@ def problem_401():
 
 
 if __name__ == '__main__':
-    print(problem_47())
+    print(problem_63())

@@ -132,6 +132,13 @@ class TestEulerRoutines(unittest.TestCase):
         for output, n in zip(expected_outputs, range(2, 101)):
             self.assertAlmostEqual(output, EulerRoutines.euler_totient_function(n), msg=f"n={n}")
 
+    def test_digital_sum(self):
+        self.assertEqual(13, EulerRoutines.digital_sum(84001))
+
+    def test_digital_root(self):
+        self.assertEqual(5, EulerRoutines.digital_root(24566))
+        self.assertEqual(7, EulerRoutines.digital_root(65536))
+
 
 class TestNumeral(unittest.TestCase):
 
