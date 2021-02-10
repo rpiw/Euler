@@ -324,6 +324,12 @@ class EulerRoutines(LoggingHelper):
     def factorize(start: int = 4, stop: int = -1):
         u"""Factorize consecutive integers in range(start, stop + 1). Uses sieve with primes up to sqrt(stop)."""
         results = {}
+        if isinstance(start, Sequence):
+            start, stop = start[0], start[-1]
+        elif isinstance(start, set):
+            start = list(start)
+            start, stop = start[0], start[-1]
+
         if stop == -1:
             stop = start
 
@@ -862,16 +868,28 @@ def problem_47():
     Well, we dont need to factorize fully numbers - if number has got less or more than 4 distinct prime factors,
     factorization can be stopped.
     """
-
-    result = []
-    limit = 10**5
+    limit = int(1.4 * 10**5)
     primes = EulerRoutines.primes(limit, read=True)
     primes_set = set(primes)
     not_primes = set(range(1, limit + 1)) - primes_set
-    for number in not_primes:
-        factors = EulerRoutines.factorize_small_numbers(number)
-        result.append(factors)
-    return result
+    factors = EulerRoutines.factorize(not_primes)
+    local_results = []
+
+    for n in range(4, limit + 1):  # we start with 4 in  factorize!
+        if len(local_results) == 4:
+            return local_results
+
+        if len(set(factors[n])) == 4:
+
+            if not local_results:
+                local_results.append(n)
+            else:
+                if n - local_results[-1] == 1:
+                    local_results.append(n)
+                else:
+                    local_results.clear()
+                    local_results.append(n)
+    return
 
 
 def problem_49():
@@ -1214,4 +1232,4 @@ def problem_401():
 
 if __name__ == '__main__':
     pass
-    # print(problem_47())
+    print(problem_47())
