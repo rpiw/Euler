@@ -591,8 +591,32 @@ def problem_19():
 
 
 def problem_26():
-    results = []
-    return results
+    results = {}
+    # Multiple numerator by 10 and check remainder
+    for n in range(2, 1001):
+        numerator = 1
+        remainder = numerator % n
+        local_results = [remainder]
+
+        while True:
+            numerator = 10 * remainder
+            remainder = numerator % n
+
+            if remainder in local_results:
+                break
+            local_results.append(remainder)
+
+            if len(local_results) >= n:
+                break
+
+        results[n] = local_results
+    maximum = 0
+    current_i = None
+    for i in results.keys():
+        if len(results[i]) > maximum:
+            maximum = len(results[i])
+            current_i = i
+    return current_i, maximum
 
 
 def problem_27():
@@ -1230,4 +1254,4 @@ def problem_401():
 
 if __name__ == '__main__':
     pass
-    print(problem_49())
+    print(problem_26())
