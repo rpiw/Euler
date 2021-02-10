@@ -123,7 +123,15 @@ class TestEulerRoutines(unittest.TestCase):
         self.assertFalse(EulerRoutines.coprimes(3, 6, 9))
 
     def test_factorize(self):
-        self.assertEqual(((3, 1), (5, 1)), EulerRoutines.factorize(15))
+        self.assertEqual([3, 5], EulerRoutines.factorize_small_numbers(15)[15])
+        self.assertEqual([3, 3, 11, 101], EulerRoutines.factorize_small_numbers(9999)[9999])
+
+    def test_factorize(self):
+        start, stop = 4, 10 ** 4
+        x = EulerRoutines.factorize_small_numbers(start, list(x for x in range(start, stop + 1)))
+        y = EulerRoutines.factorize(start, stop)
+        for i in range(start, stop + 1):
+            self.assertEqual(x[i], y[i], msg=f"{i}")
 
     def test_euler_totient_function(self):
         expected_outputs = [1, 2, 2, 4, 2, 6, 4, 6, 4, 10, 4, 12, 6, 8, 8, 16, 6, 18, 8, 12, 10, 22, 8, 20, 12, 18,

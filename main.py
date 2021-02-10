@@ -2,10 +2,8 @@ import functools
 import itertools
 import math
 import numpy as np
-from typing import Union
+from typing import Union, Sequence
 import logging
-
-from PyFraction import PyFraction
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +76,9 @@ class EulerRoutines(LoggingHelper):
     _primes_file_name = "primes.npy"
 
     @staticmethod
-    def primes(upper_limit: int, algorithm="sieve", cache=True, read=False) -> np.array:
+    def primes(upper_limit: int, algorithm="sieve", cache=True, read=True) -> np.array:
         u"""Return array containing primes below upper_limit integer.
+        :rtype: object
         :algorithm:
             brute - check every integer if is a prime, very slow method!
             sieve - use sieve of eratosthenes, fast and reliable.
@@ -98,9 +97,8 @@ class EulerRoutines(LoggingHelper):
                 EulerRoutines._primes = np.unique(np.concatenate((EulerRoutines._primes, loaded), 0))
                 logger.debug(f"Primes loaded from file {EulerRoutines._primes_file_name}.")
 
-        if EulerRoutines._primes.size > 0:
-            if EulerRoutines._primes[-1] > upper_limit:
-                return np.array([x for x in EulerRoutines._primes if x < upper_limit])
+        if EulerRoutines._primes.size > 0 and read:
+            return np.array([x for x in EulerRoutines._primes if x < upper_limit])
 
         # here begins the calculations...
         results = np.array([2], dtype=int)
@@ -289,17 +287,72 @@ class EulerRoutines(LoggingHelper):
                     next_position = (x + steps[step][0], y + steps[step][1])
                 raise NotImplemented
 
-    @staticmethod
-    def factorize(number: int, x: int = 2):
-        u"""Factorize. Algorithm: Pollard's rho algorithm"""
+    # @staticmethod
+    # def factorize(number: int, x: int = 2):
+    #     u"""Factorize. Algorithm: Pollard's rho algorithm"""
+    #
+    #     for cycle in itertools.count(1):
+    #         y = x
+    #         for i in range(2 ** cycle):
+    #             x = (x * x + 1) % number
+    #             factor = math.gcd(x - y, number)
+    #             if factor > 1:
+    #                 return factor
 
-        for cycle in itertools.count(1):
-            y = x
-            for i in range(2 ** cycle):
-                x = (x * x + 1) % number
-                factor = math.gcd(x - y, number)
-                if factor > 1:
-                    return factor
+    @staticmethod
+    def factorize_small_numbers(number: int, *args):
+        u"""Return prime factors of a number (or tuple of numbers). For large number use factorize"""
+        if args:
+            numbers = [number] + list(*args)
+        else:
+            numbers = (number,)
+        results = {}
+        for n in numbers:
+            results[n] = []
+            factor = 2
+            new_n = n
+            while new_n != 1:
+                while new_n % factor == 0:
+                    new_n //= factor
+                    results[n].append(factor)
+                else:
+                    factor += 1
+
+        return results
+
+    @staticmethod
+    def factorize(start: int = 4, stop: int = -1):
+        u"""Factorize consecutive integers in range(start, stop + 1). Uses sieve with primes up to sqrt(stop)."""
+        results = {}
+        if stop == -1:
+            stop = start
+
+        primes = EulerRoutines.primes(int(math.sqrt(stop)))
+        primes_set = set(primes)
+        for n in range(start, stop + 1):
+            results[n] = []
+
+            if n in primes_set:
+                results[n] = [n]  # if is prime, skip it
+                continue
+
+            primes_iter = iter(primes)
+            factor = next(primes_iter)
+            new_n = n
+
+            while new_n != 1:
+                while new_n % factor == 0:
+                    new_n //= factor
+                    results[n].append(factor)
+                else:
+                    try:
+                        factor = next(primes_iter)
+                    except StopIteration:
+                        if new_n > math.sqrt(n):
+                            results[n].append(new_n)  # prime larger than sqrt(end)
+                        break
+
+        return results
 
     @staticmethod
     def euler_totient_function(number: int) -> int:
@@ -789,61 +842,36 @@ def problem_46():
     return None
 
 
-# def problem_47(): FIX ME
-#     u"""
-#
-#     The first two consecutive numbers to have two distinct prime factors are:
-#
-#     14 = 2 × 7
-#     15 = 3 × 5
-#
-#     The first three consecutive numbers to have three distinct prime factors are:
-#
-#     644 = 2² × 7 × 23
-#     645 = 3 × 5 × 43
-#     646 = 2 × 17 × 19.
-#
-#     Find the first four consecutive integers to have four distinct prime factors each. What is the first of these
-#     numbers?
-#
-#     Well, we dont need to factorize fully numbers - if number has got less or more than 4 distinct prime factors,
-#     factorization can be stopped.
-#     """
-#
-#     result = []
-#     primes = EulerRoutines.primes(10**7)
-#     primes_set = set(primes)
-#     found = False
-#     n = 645
-#     while not found:
-#         i = 0
-#         local_results = set()
-#         local_number = n
-#         while local_number > 1:
-#             if local_number in primes_set:
-#                 break
-#             current_prime = primes[i]
-#             i += 1
-#             rest = local_number % current_prime
-#
-#             if rest == 0:
-#                 local_number //= current_prime
-#             else:
-#                 continue
-#
-#             local_results.add(current_prime)
-#             if len(local_results) > 4:
-#                 break
-#
-#         else:
-#             result.append(n)
-#             print("Adding number!")
-#         if len(result) == 4:
-#             if result[3] - result[2] == result[2] - result[1] == result[1] - result[0] == 1:
-#                 return result
-#             else:
-#                 result.clear()
-#         n += 1
+def problem_47():
+    u"""
+
+    The first two consecutive numbers to have two distinct prime factors are:
+
+    14 = 2 × 7
+    15 = 3 × 5
+
+    The first three consecutive numbers to have three distinct prime factors are:
+
+    644 = 2² × 7 × 23
+    645 = 3 × 5 × 43
+    646 = 2 × 17 × 19.
+
+    Find the first four consecutive integers to have four distinct prime factors each. What is the first of these
+    numbers?
+
+    Well, we dont need to factorize fully numbers - if number has got less or more than 4 distinct prime factors,
+    factorization can be stopped.
+    """
+
+    result = []
+    limit = 10**5
+    primes = EulerRoutines.primes(limit, read=True)
+    primes_set = set(primes)
+    not_primes = set(range(1, limit + 1)) - primes_set
+    for number in not_primes:
+        factors = EulerRoutines.factorize_small_numbers(number)
+        result.append(factors)
+    return result
 
 
 def problem_49():
@@ -956,15 +984,20 @@ def problem_59():
 
 def problem_62():
     number = 100
-    cubes = set()
-
-    while True:
-        cube = number ** 3
-        cubes.add(cube)
-        permuations = EulerRoutines.permute(cube)
-        local_counter = 0
-        for permuation in permuations:
-            pass
+    _range = range(1, 10 ** 4)
+    cubes = np.array([x ** 3 for x in _range], dtype=int)
+    cubes_set = set(np.array([x ** 3 for x in _range], dtype=int))  # list of cubes
+    for i in _range:
+        cube = cubes[i]
+        local_sum = 0
+        results = []
+        permutations = set(EulerRoutines.permute(cube))
+        for permutation in permutations:
+            if permutation in cubes_set:
+                local_sum += 1
+                results.append(permutation)
+            if local_sum == 5 and functools.reduce(lambda x, y: len(str(x)) == len(str(y)), results):
+                return i, results
 
 
 def problem_63():
@@ -1180,4 +1213,5 @@ def problem_401():
 
 
 if __name__ == '__main__':
-    print(problem_63())
+    pass
+    # print(problem_47())
