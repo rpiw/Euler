@@ -893,19 +893,17 @@ def problem_47():
 
 
 def problem_49():
-    primes = np.fromiter(filter(lambda x: len(str(x)) == 4, EulerRoutines.primes(10000)), dtype=int)
-    results = set()
-
-    for prime in primes:
-        permutations = EulerRoutines.permute(prime)
-        local_results = []
-        for p in set(permutations):
-            if p in EulerRoutines._primes_set:
-                local_results.append(p)
-        local_results.sort()
-        if len(local_results) == 3:
-            results.add(sorted(tuple(local_results)))
-        return sorted(results)
+    primes = [x for x in EulerRoutines.primes(10001, read=False) if len(str(x)) == 4]
+    primes_set = set(primes)
+    results = []
+    for prime_1 in primes:
+        for prime_2 in (x for x in primes if x > prime_1):
+            number_3 = prime_2 + (prime_2 - prime_1)
+            if number_3 in primes_set:
+                permutations = set(EulerRoutines.permute(prime_1))
+                if prime_2 in permutations and number_3 in permutations:
+                    results.append("".join(map(str, (prime_1, prime_2, number_3))))
+    return results
 
 
 def problem_50():
@@ -1232,4 +1230,4 @@ def problem_401():
 
 if __name__ == '__main__':
     pass
-    print(problem_47())
+    print(problem_49())
