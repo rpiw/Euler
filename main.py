@@ -65,7 +65,7 @@ class EulerRoutines(LoggingHelper):
     @staticmethod
     @functools.cache
     def is_prime(number: int):
-        EulerRoutines().logger.info(f"Checking if {number} is prime.")
+        # EulerRoutines().logger.info(f"Checking if {number} is prime.")
         if EulerRoutines._primes.size > 0 and number < EulerRoutines._primes[-1]:
             return number in EulerRoutines._primes_set
         for d in range(2, np.int(np.ceil(np.sqrt(number))) + 1):
@@ -892,7 +892,7 @@ def problem_47():
     Well, we dont need to factorize fully numbers - if number has got less or more than 4 distinct prime factors,
     factorization can be stopped.
     """
-    limit = int(1.4 * 10**5)
+    limit = int(1.4 * 10 ** 5)
     primes = EulerRoutines.primes(limit, read=True)
     primes_set = set(primes)
     not_primes = set(range(1, limit + 1)) - primes_set
@@ -1008,6 +1008,29 @@ def problem_57():
         if len(str(frac.numerator)) > len(str(frac.denominator)):
             i += 1
     return i
+
+
+def problem_58():
+    limit = 10 ** 7
+    primes_on_diagonals = 0
+    a = 3
+    counter = 0
+    while counter < limit:
+        a1, a2, a3 = a ** 2 - a + 1, a ** 2 - 2 * a + 2, a ** 2 - 3 * a + 3
+        if EulerRoutines.is_prime(a1):
+            primes_on_diagonals += 1
+        if EulerRoutines.is_prime(a2):
+            primes_on_diagonals += 1
+        if EulerRoutines.is_prime(a3):
+            primes_on_diagonals += 1
+
+        diagonals = 4 * (a // 2) + 1
+
+        if primes_on_diagonals / diagonals < 0.1:
+            return a, primes_on_diagonals, diagonals, primes_on_diagonals / diagonals, counter
+        a += 2
+        counter += 1
+
 
 def problem_59():
     cipher = np.loadtxt("p059_cipher.txt", delimiter=',', dtype=int)
@@ -1264,4 +1287,4 @@ def problem_401():
 
 if __name__ == '__main__':
     pass
-    print(problem_57())
+    print(problem_58())
