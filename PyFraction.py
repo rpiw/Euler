@@ -55,6 +55,19 @@ class PyFraction(Fraction):
         return tuple((h, k) for h, k in zip(numerators, denominators))
 
 
+def infinite_continued_fraction(number=2, iterations: int = 10):
+    u"""Infinite continued fraction expansion.
+        Fraction = starter + 1 / (number + ...)"""
+    fraction = PyFraction(1, number)
+    results = []
+    for i in range(iterations):
+        results.append((i + 1, fraction, fraction + 1))
+        fraction = PyFraction(1, number + fraction)
+    return results
+
+
 if __name__ == '__main__':
-    p = PyFraction(415, 93)
-    print(p.convergents())
+    pass
+    # p = PyFraction(415, 93)
+    # print(p.convergents())
+    infinite_continued_fraction(2, 10)

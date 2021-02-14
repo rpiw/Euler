@@ -999,6 +999,16 @@ def problem_56():
     return maximum
 
 
+def problem_57():
+    from PyFraction import infinite_continued_fraction
+    results = infinite_continued_fraction(2, 1000)
+    i = 0
+    for result in results:
+        frac = result[2]
+        if len(str(frac.numerator)) > len(str(frac.denominator)):
+            i += 1
+    return i
+
 def problem_59():
     cipher = np.loadtxt("p059_cipher.txt", delimiter=',', dtype=int)
     # most_common = np.bincount(cipher).argmax()  # Space symbol ' ' or letter e
@@ -1254,4 +1264,4 @@ def problem_401():
 
 if __name__ == '__main__':
     pass
-    print(problem_26())
+    print(problem_57())
