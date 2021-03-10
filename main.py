@@ -1034,9 +1034,24 @@ def problem_58():
 
 def problem_59():
     cipher = np.loadtxt("p059_cipher.txt", delimiter=',', dtype=int)
-    # most_common = np.bincount(cipher).argmax()  # Space symbol ' ' or letter e
-    # first_occurence = np.where(cipher == most_common)[0][0]
+    most_common = np.bincount(cipher).argmax()  # Space symbol ' ' or letter e
+    first_occurence = np.where(cipher == most_common)[0][0]  # index 2: last char of the key is ' ' ^ this one
+    key = [" ", " ", chr(cipher[2] ^ ord(' '))]
+    characters = {" ": cipher[first_occurence]}
 
+    # 2nd most common letter is "i" in English.
+    # last character should be '.'. So, let we check if the key's length divides cipher's length.
+    if len(cipher) % 3 == 0:
+        if chr(cipher[-1] ^ ord(' ')) == ".":
+            characters["."] = cipher[-1]
+
+    print(key)
+
+    # so first 2 characters must be: 1 uppercase letter and 1 lowercase letter and make 2 letters long word
+    with open("words.txt", "r") as fi:
+        dictionary = fi.readline().replace('"', '').split(',')
+    two_letters_dict = [x[0] + x[1].lower() for x in dictionary if len(x) == 2]
+    print(two_letters_dict)
     from itertools import cycle
     from string import ascii_lowercase
     import re
@@ -1045,14 +1060,16 @@ def problem_59():
         return "".join(chr(letter ^ ord(k)) for (letter, k) in zip(cipher, cycle(key)))
 
     pattern = re.compile(r'\s|\w')
-    # brute force
     # for char1 in ascii_lowercase:
+    #     letter1 = chr(ord(char1) ^ cipher[0])
     #     for char2 in ascii_lowercase:
-    #         for char3 in ascii_lowercase:
-    #             key = char1 + char2 + char3
-    #             encrypted = decipher(key)
-    #             if re.match(pattern, encrypted):
-    #                 print(key)
+    #         letter2 = chr(ord(char2) ^ cipher[1])
+    #         if letter1 + letter2 in two_letters_dict:
+    #             print(letter1 + letter2)
+    for word in two_letters_dict:
+        letter = chr(ord(word[0]) ^ cipher[0])
+        letter2 = chr(ord(word[1]) ^ cipher[1])
+        print(letter + letter2)
 
 
 def problem_62():
@@ -1083,6 +1100,33 @@ def problem_63():
             elif len(word) > j:
                 break
     return total
+
+
+def problem_65():
+    from fractions import Fraction
+    from decimal import Decimal
+    e = [Decimal(1) for _ in range(100)]
+
+    k = 0
+    for i in range(100):
+        if i % 3 == 1:
+            k += 1
+            e[i] = 2 * k
+    e = [Decimal(2)] + e
+    # test_sample = [Fraction(x[0], x[1]) for x in [(2, 1), (3, 1), (8, 3), (11, 4), (19, 7), (87, 32), (106, 39), (193, 71), (1264, 465), (1457, 536)]]
+    limit = 99
+
+    for i in range(limit, limit + 1):
+        result = Fraction(2)
+        denominator = 0
+        for j in range(i):
+            n = Fraction(e[i - j])
+            denominator = Fraction(numerator=Fraction(1), denominator=(n + denominator))
+            # print("d", denominator, "n", n, i - j)
+        result += denominator
+
+        # print(result)
+        return sum([int(x) for x in str(result.numerator)])
 
 
 def problem_66():
@@ -1287,4 +1331,4 @@ def problem_401():
 
 if __name__ == '__main__':
     pass
-    print(problem_58())
+    print(problem_65())
