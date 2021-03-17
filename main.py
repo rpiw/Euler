@@ -1,6 +1,8 @@
 import functools
 import itertools
 import math
+
+import numpy
 import numpy as np
 from typing import Union, Sequence
 import logging
@@ -1102,6 +1104,21 @@ def problem_63():
     return total
 
 
+def problem_64():
+    u"""All credits go to:
+    https://web.archive.org/web/20151221205104/http://web.math.princeton.edu/mathlab/jr02fall/Periodicity/mariusjp.pdf
+    theorem 2.3 from the link above."""
+
+    # first, determine if a fraction is rational
+    from PyFraction import continued_fraction_expansion
+    expansions = continued_fraction_expansion([x for x in range(2, 10001)])
+    total = 0
+    for n in range(2, 10000):
+        if len(expansions[n][1]) % 2 == 1:
+            total += 1
+    return total
+
+
 def problem_65():
     from fractions import Fraction
     from decimal import Decimal
@@ -1290,7 +1307,10 @@ def problem_97():
     base = 2
     factor_expontial = 7830457
     rest = 1
-    number = factor_a * pow(base, factor_expontial) + rest
+    l = 2357207
+    print(EulerRoutines.is_prime(factor_a), EulerRoutines.is_prime(factor_expontial))
+    number = 12345678901
+    # number = factor_a * pow(base, factor_expontial) + rest
     return str(number)[:-10]
 
 
@@ -1330,5 +1350,22 @@ def problem_401():
 
 
 if __name__ == '__main__':
-    pass
-    print(problem_65())
+    from time import time
+    start = time()
+    print(problem_64())
+    end = time() - start
+    print(end)
+
+def period(arr):
+    u"""Find period in a sequence arr."""
+    possible = set(range(1, len(arr) + 1))
+    p, i = 1, 0
+    while True:
+        if np.array_equal(arr[i: i + p], arr[i + p: i + 2 * p]):
+            i += 1
+        else:
+            possible.remove(p)
+            p += 1
+            i = 0
+        if i + 2 * p == len(arr):
+            return p
