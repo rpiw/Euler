@@ -375,16 +375,17 @@ class EulerRoutines(LoggingHelper):
     @staticmethod
     def euler_totient_function_array(max_n: int):
         u"""Compute Euler's totient function for all n from 1 to max_n. Return dict."""
+        if max_n <= 1 or not isinstance(max_n, int):
+            raise TypeError
+
         primes = EulerRoutines.primes(max_n)
-        inverted_primes = [1 - 1 / p for p in primes]
-        results = {}
-        n = 1
-        while n < max_n:
-            result = n
-            for prime in [x for x in inverted_primes if x <= n]:
-                result *= prime
-            results[n] = result
-        return results
+        phi = {n: n for n in range(1, max_n + 1)}
+        for i in range(2, max_n + 1):
+            if phi[i] == i:
+                for j in range(i, max_n + 1, i):
+                    phi[j] -= phi[j] / i
+
+        return phi
 
     @staticmethod
     def is_square(number: int) -> bool:
@@ -1074,6 +1075,65 @@ def problem_59():
         print(letter + letter2)
 
 
+def problem_61():
+    # def p3(n):
+    #     return n * (n + 1) // 2
+    #
+    # def p4(n):
+    #     return n ** 2
+    #
+    # def p5(n):
+    #     return n * (3 * n - 1) // 2
+    #
+    # def p6(n):
+    #     return n * (2 * n - 1)
+    #
+    # def p7(n):
+    #     return n * (5 * n - 1)
+    #
+    # def p8(n):
+    #     return n * (3 * n - 2)
+
+    # if (p3[:2] == p4[2:] and p4[:2] == p5[2:] and p5[:2] == p6[2:] and p7[:2] == p8[2:] and p8[:2] == p3[2:]) or \
+    #         (p3[:1] == p4[1:] and p4[:1] == p5[1:] and p5[:1] == p6[1:] and p7[:1] == p8[1:] and p8[:1] == p3[1:]):
+    #     print(n, p3, p4, p5, p6, p7, p8, sum([p3, p4, p5, p6, p7, p8]))
+
+    numbers = [set(), set(), set(), set(), set(), set()]
+
+    for n in range(19, 144):
+        numbers[0].add(str(n * (n + 1) // 2))
+        numbers[1].add(str(n ** 2))
+        numbers[2].add(str(n * (3 * n - 1) // 2))
+        numbers[3].add(str(n * (2 * n - 1)))
+        numbers[4].add(str(n * (5 * n - 1)))
+        numbers[5].add(str(n * (3 * n - 2)))
+
+
+    def find_solution(i, j, partial_solution=[]):
+        if partial_solution:  # partial solution has a structure: [(index of column, number), ...]
+            # begin with the lastest entry
+            index = partial_solution[-1][0]
+            number = partial_solution[-1][1]
+            indices = [x for x in range(6) if x != index]
+            for idx in indices:
+                for other_number in numbers[idx]:
+                    if number[2:] == other_number[:2]:
+                        pass
+
+        # if there is no partial solution yet
+        for number in numbers[i]:
+            for other_number in numbers[j]:
+                if number[2:] == other_number[:2]:
+                    pass
+        if j + 1 <= 5:
+            find_solution(i, j + 1)
+        elif 5 >= i + 1 != j:
+            find_solution(i + 1, j)
+        else:
+            find_solution(i + 1, 0)
+    return
+
+
 def problem_62():
     number = 100
     _range = range(1, 10 ** 4)
@@ -1184,19 +1244,13 @@ def problem_68():
 
 
 def problem_69():
-    from operator import itemgetter
-    from decimal import Decimal
-    import time
-    time_start = time.time()
-
     euler = EulerRoutines.euler_totient_function_array(10 ** 6)  # dict
-    phi = list((n, Decimal(n / x)) for (n, x) in euler.items())
+    max_value = (1, 1)
+    for key, value in euler.items():
+        if max_value[0] / max_value[1] < key / value:
+            max_value = (key, value)
 
-    time_end = time.time()
-
-    print(f"Calculatored in {time_end - time_start}")
-
-    return max(phi, key=itemgetter(1))
+    return max_value
 
 
 def problem_74():
@@ -1351,10 +1405,12 @@ def problem_401():
 
 if __name__ == '__main__':
     from time import time
+
     start = time()
-    print(problem_64())
+    print(problem_69())
     end = time() - start
     print(end)
+
 
 def period(arr):
     u"""Find period in a sequence arr."""
