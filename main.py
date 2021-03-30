@@ -378,8 +378,7 @@ class EulerRoutines(LoggingHelper):
         if max_n <= 1 or not isinstance(max_n, int):
             raise TypeError
 
-        primes = EulerRoutines.primes(max_n)
-        phi = {n: n for n in range(1, max_n + 1)}
+        phi = {n: n for n in range(2, max_n + 1)}
         for i in range(2, max_n + 1):
             if phi[i] == i:
                 for j in range(i, max_n + 1, i):
@@ -1253,6 +1252,19 @@ def problem_69():
     return max_value
 
 
+def problem_70():
+    from collections import Counter
+    totient = EulerRoutines.euler_totient_function_array(10 ** 7)
+    minimal = (100000, 1)
+    for key, value in totient.items():
+        phi, result = str(key), str(int(value))
+        if Counter(phi) == Counter(result):
+            if minimal[0] / minimal[1] > key / value:
+                minimal = (key, value)
+
+    return minimal
+
+
 def problem_74():
     from math import factorial
     factorials = {str(x): factorial(x) for x in range(0, 10)}
@@ -1407,7 +1419,7 @@ if __name__ == '__main__':
     from time import time
 
     start = time()
-    print(problem_69())
+    print(problem_70())
     end = time() - start
     print(end)
 
