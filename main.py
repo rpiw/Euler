@@ -289,18 +289,6 @@ class EulerRoutines(LoggingHelper):
                     next_position = (x + steps[step][0], y + steps[step][1])
                 raise NotImplemented
 
-    # @staticmethod
-    # def factorize(number: int, x: int = 2):
-    #     u"""Factorize. Algorithm: Pollard's rho algorithm"""
-    #
-    #     for cycle in itertools.count(1):
-    #         y = x
-    #         for i in range(2 ** cycle):
-    #             x = (x * x + 1) % number
-    #             factor = math.gcd(x - y, number)
-    #             if factor > 1:
-    #                 return factor
-
     @staticmethod
     def factorize_small_numbers(number: int, *args):
         u"""Return prime factors of a number (or tuple of numbers). For large number use factorize"""
@@ -950,6 +938,18 @@ def problem_50():
     return max(results)
 
 
+def problem_51():
+    limit = 10 ** 6  # wild guess
+    primes = np.array([str(p) for p in EulerRoutines.primes(upper_limit=limit)])
+    primes_set = set(primes)
+    length = 2
+    occurrences = 1
+    joker = 0
+    for prime in primes:
+        if len(prime) == length:
+            print(prime)
+
+
 def problem_52():
     number = 123456
     while True:
@@ -1035,43 +1035,43 @@ def problem_58():
 
 
 def problem_59():
+    import string
+
     cipher = np.loadtxt("p059_cipher.txt", delimiter=',', dtype=int)
-    most_common = np.bincount(cipher).argmax()  # Space symbol ' ' or letter e
-    first_occurence = np.where(cipher == most_common)[0][0]  # index 2: last char of the key is ' ' ^ this one
-    key = [" ", " ", chr(cipher[2] ^ ord(' '))]
-    characters = {" ": cipher[first_occurence]}
+    # most_common = np.bincount(cipher).argmax()  # Space symbol ' ' or letter e
+    # first_occurence = np.where(cipher == most_common)[0][0]  # index 2: last char of the key is ' ' ^ this one
+    # key = [" ", " ", chr(cipher[2] ^ ord(' '))]
+    # characters = {" ": cipher[first_occurence]}
 
     # 2nd most common letter is "i" in English.
     # last character should be '.'. So, let we check if the key's length divides cipher's length.
-    if len(cipher) % 3 == 0:
-        if chr(cipher[-1] ^ ord(' ')) == ".":
-            characters["."] = cipher[-1]
-
-    print(key)
-
-    # so first 2 characters must be: 1 uppercase letter and 1 lowercase letter and make 2 letters long word
-    with open("words.txt", "r") as fi:
-        dictionary = fi.readline().replace('"', '').split(',')
-    two_letters_dict = [x[0] + x[1].lower() for x in dictionary if len(x) == 2]
-    print(two_letters_dict)
     from itertools import cycle
-    from string import ascii_lowercase
-    import re
 
     def decipher(key: str):
         return "".join(chr(letter ^ ord(k)) for (letter, k) in zip(cipher, cycle(key)))
 
-    pattern = re.compile(r'\s|\w')
-    # for char1 in ascii_lowercase:
-    #     letter1 = chr(ord(char1) ^ cipher[0])
-    #     for char2 in ascii_lowercase:
-    #         letter2 = chr(ord(char2) ^ cipher[1])
-    #         if letter1 + letter2 in two_letters_dict:
-    #             print(letter1 + letter2)
-    for word in two_letters_dict:
-        letter = chr(ord(word[0]) ^ cipher[0])
-        letter2 = chr(ord(word[1]) ^ cipher[1])
-        print(letter + letter2)
+    def valid_character(char):
+        if isinstance(char, str):
+            char = ord(char)
+        return 32 <= char <= 93 or 97 <= char <= 122
+
+    for i in range(0, 26):
+        for j in range(0, 26):
+            for k in range(0, 26):
+                decoded = []
+                t = [i + 97, j + 97, k + 97]
+                for p in range(len(cipher)):
+                    c = t[p % 3] ^ cipher[p]
+                    if valid_character(c):
+                        decoded.append(c)
+                    else:
+                        break
+
+                if len(decoded) == len(cipher):
+                    key = "".join(map(chr, t))
+                    print(f"Decoded: {decipher(key)}")
+                    print(key)
+                    return sum(decoded)
 
 
 def problem_61():
@@ -1107,7 +1107,6 @@ def problem_61():
         numbers[4].add(str(n * (5 * n - 1)))
         numbers[5].add(str(n * (3 * n - 2)))
 
-
     def find_solution(i, j, partial_solution=[]):
         if partial_solution:  # partial solution has a structure: [(index of column, number), ...]
             # begin with the lastest entry
@@ -1130,6 +1129,7 @@ def problem_61():
             find_solution(i + 1, j)
         else:
             find_solution(i + 1, 0)
+
     return
 
 
@@ -1282,6 +1282,24 @@ def problem_74():
     return len(results)
 
 
+def problem_75():
+    L_max = 1500000
+    L_test = 120
+
+    # total_counter = 0
+    # for l in range(12, L_test + 1):
+    #     local_counter = 0
+    #     a, b = 3, 4
+    #     c = l - a - b  # a and b can not be equal! c must be always bigger
+    #     # whenever a or b increases by a 1, c also must be increased, because a**2 + (b + 1)**2 = a**2 + b**2 + 2b + 1
+    #     # so c must be increased by a factor of 2b + 1
+    #     while a + b + c <= l:
+    #         if c ** 2 == a ** 2 + b ** 2:
+    #             local_counter += 1
+    #
+    #
+
+
 def problem_79():
     with open("passcode.txt", 'r') as fi:
         passcodes = fi.readlines()
@@ -1419,9 +1437,9 @@ if __name__ == '__main__':
     from time import time
 
     start = time()
-    print(problem_70())
+    print(problem_59())
     end = time() - start
-    print(end)
+    print(f"Ending in {end}")
 
 
 def period(arr):
