@@ -1392,10 +1392,8 @@ def problem_97():
     factor_expontial = 7830457
     rest = 1
     l = 2357207
-    print(EulerRoutines.is_prime(factor_a), EulerRoutines.is_prime(factor_expontial))
-    number = 12345678901
-    # number = factor_a * pow(base, factor_expontial) + rest
-    return str(number)[:-10]
+    number = factor_a * pow(base, factor_expontial, 10 ** 10) + rest
+    return str(number)[-10:]
 
 
 def problem99():
@@ -1437,7 +1435,7 @@ if __name__ == '__main__':
     from time import time
 
     start = time()
-    print(problem_59())
+    print(problem_97())
     end = time() - start
     print(f"Ending in {end}")
 
